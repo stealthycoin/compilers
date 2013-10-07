@@ -1,13 +1,13 @@
-executable = 
-objects = program.o
+executable = oc
+objects = main.o
 all: $(objects)
-	cc -o $(executable) $(objects)
+	g++ -o $(executable) $(objects)
 
-program.o:
-	cc -c main.cpp
+main.o:
+	g++ -c main.cpp
 
 clean:
-	rm *~  $(objects)
+	rm *~ $(objects)
 
 spotless: clean
 	rm $(executable)
