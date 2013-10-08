@@ -6,8 +6,10 @@ all: $(objects)
 main.o:
 	g++ -c main.cpp
 
+.PHONY: clean
 clean:
 	rm *~ $(objects)
 
+.PHONY: spotless
 spotless: clean
 	rm $(executable)
