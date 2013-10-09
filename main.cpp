@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <libgen.h>
 
 #define BUF_SIZE 128
 
@@ -12,7 +13,7 @@ int main(int argc, char** argv) {
   
   char* buf_d = NULL; 
   char* buf_at = NULL;
-  char program[BUF_SIZE];
+  char* program = NULL;
   char filename[BUF_SIZE];
   
   int yy_flex_debug = 0;
@@ -55,8 +56,10 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Only one program to compile at a time.\n");
   }
 
+  strcpy(filename, argv[optind]);
+  program = basename(filename);
 
-
+  printf("%s, %s", filename, program);//program is off by one or something lame.
   
   return 0;
 }
