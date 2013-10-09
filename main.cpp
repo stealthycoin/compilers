@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 
   printf("%s, %s", filename, program);//program is off by one or something lame.
 
-  std::vector<std::string> output = my_popen("/usr/bin/cpp " + std::string(program));
+  std::vector<std::string> output = my_popen("/usr/bin/cpp " + std::string(filename));
         for ( std::vector<std::string>::iterator itr = output.begin();
                                                  itr != output.end();
                                                  ++itr) {
