@@ -1,37 +1,31 @@
+//Name: John Carlyle Username: jcarlyle@ucsc.edu
+//Name: Morgan McDermott Username: moamcdermo@ucsc.edu
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <libgen.h>
-
-#include <vector>
-#include <string>
-#include <iostream>
-
+#include <errno.h>
+#include "auxlib.h"
 
 #define BUF_SIZE 128
 
+char  *program;
+void syswarn (char *problem) {
+   fflush (NULL);
+   fprintf (stderr, "%s: %s: %s\n",
+            program, problem, strerror (errno));
+   fflush (NULL);
+   set_exitstatus(EXIT_FAILURE);
+}
 
-//my_popen taken from http://stackoverflow.com/questions/7807755/reading-popen-results-in-c
-// and modified slightly. 
-std::vector<std::string> my_popen (const std::string& cmd) {
-    std::vector<std::string> out;
-    bool            ret_boolValue = true;
-    FILE*           fp;
-    const int       SIZEBUF = 1234;
-    char            buf [SIZEBUF];
-    out = std::vector<std::string> ();
-    if ((fp = popen(cmd.c_str (), "r")) == NULL) {
-      //return false;
-    }
-    std::string  cur_string = "";
-    while (fgets(buf, sizeof (buf), fp)) {
-        cur_string += buf;
-    }
-    out.push_back (cur_string.substr (0, cur_string.size () - 1));
-    pclose(fp);
-    return out;
+void chomp (char *string, char delim) {
+   size_t len = strlen (string);
+   if (len == 0) return;
+   char *nlpos = string + len - 1;
+   if (*nlpos == delim) *nlpos = '\0';
 }
 
 int main(int argc, char** argv) {
@@ -58,10 +52,10 @@ int main(int argc, char** argv) {
 	 yydebug = 1;
 	 break;
       case 'D':
-	buf_d = optarg;
+	buf_d = strdup(optarg);
 	break;
       case '@':
-	buf_at = optarg;
+	buf_at = strdup(optarg);
 	break;
       case '?':
 	 if (optopt == 'D' || optopt == '@') {
@@ -84,16 +78,11 @@ int main(int argc, char** argv) {
   }
 
   strcpy(filename, argv[optind]);
-  program = basename(filename);
+  program = strdup(basename(filename));
 
   printf("%s, %s", filename, program);//program is off by one or something lame.
 
-  std::vector<std::string> output = my_popen("/usr/bin/cpp " + std::string(filename));
-        for ( std::vector<std::string>::iterator itr = output.begin();
-                                                 itr != output.end();
-                                                 ++itr) {
-                std::cout << *itr << std::endl;
-        }
+
   
   return 0;
 }
