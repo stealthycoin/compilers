@@ -1,11 +1,32 @@
+//Name: John Carlyle Username: jcarlyle@ucsc.edu
+//Name: Morgan McDermott Username: moamcdermo@ucsc.edu
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <libgen.h>
+#include <errno.h>
+#include "auxlib.h"
 
 #define BUF_SIZE 128
+
+char  *program;
+void syswarn (char *problem) {
+   fflush (NULL);
+   fprintf (stderr, "%s: %s: %s\n",
+            program, problem, strerror (errno));
+   fflush (NULL);
+   set_exitstatus(EXIT_FAILURE);
+}
+
+void chomp (char *string, char delim) {
+   size_t len = strlen (string);
+   if (len == 0) return;
+   char *nlpos = string + len - 1;
+   if (*nlpos == delim) *nlpos = '\0';
+}
 
 int main(int argc, char** argv) {
   //set flags for boolean arguments
@@ -31,10 +52,10 @@ int main(int argc, char** argv) {
 	 yydebug = 1;
 	 break;
       case 'D':
-	buf_d = optarg;
+	buf_d = strdup(optarg);
 	break;
       case '@':
-	buf_at = optarg;
+	buf_at = strdup(optarg);
 	break;
       case '?':
 	 if (optopt == 'D' || optopt == '@') {
@@ -57,9 +78,11 @@ int main(int argc, char** argv) {
   }
 
   strcpy(filename, argv[optind]);
-  program = basename(filename);
+  program = strdup(basename(filename));
 
   printf("%s, %s", filename, program);//program is off by one or something lame.
+
+
   
   return 0;
 }
