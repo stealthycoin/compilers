@@ -1,10 +1,13 @@
 executable = oc
-objects = main.o
+objects = main.o auxlib.o
 all: $(objects)
-	g++ -o $(executable) $(objects)
+	gcc -o $(executable) $(objects)
 
 main.o: main.cpp
-	g++ -c main.cpp
+	gcc -c main.cpp
+
+auxlib.o: auxlib.cc auxlib.h
+	gcc -c auxlib.cc
 
 .PHONY: clean
 clean:
