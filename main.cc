@@ -10,7 +10,7 @@
 #include "auxlib.h"
 #include "stringset.h"
 #include <string>
-#include <stdio.h>
+#include <iostream>
 
 #define BUF_SIZE 128
 #define LINESIZE 1024
@@ -33,12 +33,6 @@ void chomp (char *string, char delim) {
 }
 
 int main(int argc, char** argv) {
-  //cout << "Test case" <<endl;
-  intern_stringset("Meow meow");
-  FILE *myfi = fopen("./myfi.file", "rw");
-  dump_stringset(myfi);
-  //cout << "Exiting test case" <<endl;
-  exit(1);
 
 
 
@@ -137,7 +131,7 @@ int main(int argc, char** argv) {
     if(pclose_i != 0) set_exitstatus( EXIT_FAILURE );
     
     string programstr = string(program) + ".str";
-    FILE *strfi = fopen(programstr.c_str(), "rw");
+    FILE *strfi = fopen(programstr.c_str(), "w");
     //cout << "Opening " +programstr <<endl;
     dump_stringset(strfi);
     fclose(strfi);
