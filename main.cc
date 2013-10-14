@@ -2,16 +2,20 @@
 //Name: Morgan McDermott Username: moamcdermo@ucsc.edu
 
 #include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <libgen.h>
 #include <errno.h>
 #include "auxlib.h"
+#include "stringset.h"
+#include <string>
+#include <stdio.h>
 
 #define BUF_SIZE 128
+#define LINESIZE 1024
 
+using namespace std;
 char  *program;
 void syswarn (char *problem) {
    fflush (NULL);
@@ -29,6 +33,15 @@ void chomp (char *string, char delim) {
 }
 
 int main(int argc, char** argv) {
+  //cout << "Test case" <<endl;
+  intern_stringset("Meow meow");
+  FILE *myfi = fopen("./myfi.file", "rw");
+  dump_stringset(myfi);
+  //cout << "Exiting test case" <<endl;
+  exit(1);
+
+
+
   //set flags for boolean arguments
   int i;
   
@@ -70,9 +83,11 @@ int main(int argc, char** argv) {
 	 return 1;
       default:
 	abort();
+	break;
       }
   }
   
+
   if (argc - optind > 1) {
     fprintf(stderr, "Only one program to compile at a time.\n");
   }
@@ -81,8 +96,54 @@ int main(int argc, char** argv) {
   program = strdup(basename(filename));
 
   printf("%s, %s", filename, program);//program is off by one or something lame.
+  
+  string command = "/usr/bin/cpp";
+  if (buf_d != NULL) {
+    command += " -D" + string(buf_d);
+  }
+  command += " " + string(filename);
+  FILE *pipe = popen(command.c_str(), "r");
+  //cout << "Command: " + command << endl;
+  if (pipe == NULL) {
+    syswarn((char*)command.c_str());
+  } 
 
+  else {
+    int line = 1;
+    char buffer[LINESIZE];
 
+    for (;;) {
+
+      char *fgets_rc = fgets(buffer, LINESIZE, pipe);
+      if (fgets_rc == NULL) break;
+      chomp(buffer, '\n');
+      int sscanf_rc = sscanf(buffer, "# %d \%[^\"]\"",
+			     &line, filename);
+      if (sscanf_rc==2) continue;
+      char *savepos = NULL;
+      char *bufptr = buffer;
+      
+      for (int tokenct = 1 ;; ++tokenct) {
+	char *token = strtok_r(bufptr, " \t\n", &savepos);
+	bufptr = NULL;
+	if (token == NULL) break;
+	intern_stringset(token);
+      }
+      ++line;
+    }
+    
+    int pclose_i = pclose(pipe);
+    eprint_status(command.c_str(), pclose_i);
+    if(pclose_i != 0) set_exitstatus( EXIT_FAILURE );
+    
+    string programstr = string(program) + ".str";
+    FILE *strfi = fopen(programstr.c_str(), "rw");
+    //cout << "Opening " +programstr <<endl;
+    dump_stringset(strfi);
+    fclose(strfi);
+    
+    
+  }
   
   return 0;
 }
