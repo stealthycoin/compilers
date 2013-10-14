@@ -1,3 +1,7 @@
+//This assignment completed with pair programming
+// Name: John Carlyle Username: jcarlyle@ucsc.edu
+// Name: Morgan McDermott Username: moamcder@ucsc.edu
+
 #include <string>
 #include <unordered_set>
 using namespace std;

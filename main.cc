@@ -1,5 +1,6 @@
-//Name: John Carlyle Username: jcarlyle@ucsc.edu
-//Name: Morgan McDermott Username: moamcdermo@ucsc.edu
+//This assignment completed with pair programming
+// Name: John Carlyle Username: jcarlyle@ucsc.edu
+// Name: Morgan McDermott Username: moamcderxf@ucsc.edu
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -33,12 +34,7 @@ void chomp (char *string, char delim) {
 }
 
 int main(int argc, char** argv) {
-
-
-
   //set flags for boolean arguments
-  int i;
-  
   char* buf_d = NULL; 
   char* buf_at = NULL;
   char* program = NULL;
@@ -48,7 +44,7 @@ int main(int argc, char** argv) {
   int yydebug = 0;
     
   //process arguments
-  int c, index;
+  int c;
   while ((c = getopt(argc, argv, "lyD:@:")) != -1) {
     switch (c) 
       {
@@ -81,23 +77,25 @@ int main(int argc, char** argv) {
       }
   }
   
+  free(buf_d);
+  free(buf_at);
 
   if (argc - optind > 1) {
     fprintf(stderr, "Only one program to compile at a time.\n");
   }
 
+
+
   strcpy(filename, argv[optind]);
   program = strdup(basename(filename));
 
-  printf("%s, %s", filename, program);//program is off by one or something lame.
-  
   string command = "/usr/bin/cpp";
   if (buf_d != NULL) {
     command += " -D" + string(buf_d);
   }
   command += " " + string(filename);
   FILE *pipe = popen(command.c_str(), "r");
-  //cout << "Command: " + command << endl;
+
   if (pipe == NULL) {
     syswarn((char*)command.c_str());
   } 
@@ -107,7 +105,6 @@ int main(int argc, char** argv) {
     char buffer[LINESIZE];
 
     for (;;) {
-
       char *fgets_rc = fgets(buffer, LINESIZE, pipe);
       if (fgets_rc == NULL) break;
       chomp(buffer, '\n');
@@ -132,12 +129,9 @@ int main(int argc, char** argv) {
     
     string programstr = string(program) + ".str";
     FILE *strfi = fopen(programstr.c_str(), "w");
-    //cout << "Opening " +programstr <<endl;
     dump_stringset(strfi);
     fclose(strfi);
-    
-    
   }
-  
+  free(program);
   return 0;
 }

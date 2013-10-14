@@ -1,4 +1,0 @@
-compilers
-=========
-
-Compilers Assignment
