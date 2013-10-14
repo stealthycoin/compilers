@@ -1,21 +1,17 @@
+GPP = g++ -g -O0 -Wall -Wextra -std=c++11
 executable = oc
-objects = main.o auxlib.o
+objects = main.o auxlib.o stringset.o
 all: $(objects)
-	gcc -o $(executable) $(objects)
+	$(GPP) $(options) -o $(executable) $(objects)
 
-<<<<<<< HEAD
-main.o: main.cpp
-	gcc -c main.cpp
+main.o: main.cc
+	$(GPP) -c main.cc
 
 auxlib.o: auxlib.cc auxlib.h
-	gcc -c auxlib.cc
-=======
-main.o: main.c
-	g++ -c main.c
+	$(GPP) -c auxlib.cc
 
-auxlib.o: auxlib.h auxlib.cc
-	g++ -c auxlib.cc
->>>>>>> popen
+stringset.o: stringset.h stringset.cc
+	$(GPP) -c stringset.cc
 
 .PHONY: clean
 clean:
