@@ -22,18 +22,18 @@ int exit_status = EXIT_SUCCESS;
 char  *program;
 
 void syswarn (char *problem) {
-   fflush (NULL);
-   fprintf (stderr, "%s: %s: %s\n",
-            program, problem, strerror (errno));
-   fflush (NULL);
-   set_exitstatus(EXIT_FAILURE);
+  fflush (NULL);
+  fprintf (stderr, "%s: %s: %s\n",
+           program, problem, strerror (errno));
+  fflush (NULL);
+  set_exitstatus(EXIT_FAILURE);
 }
 
 void chomp (char *string, char delim) {
-   size_t len = strlen (string);
-   if (len == 0) return;
-   char *nlpos = string + len - 1;
-   if (*nlpos == delim) *nlpos = '\0';
+  size_t len = strlen (string);
+  if (len == 0) return;
+  char *nlpos = string + len - 1;
+  if (*nlpos == delim) *nlpos = '\0';
 }
 
 int main(int argc, char** argv) {
@@ -52,31 +52,33 @@ int main(int argc, char** argv) {
     switch (c) 
       {
       case 'l':
-	yy_flex_debug = 1;
-	break;
+        yy_flex_debug = 1;
+        break;
       case 'y':
-	 yydebug = 1;
-	 break;
+        yydebug = 1;
+        break;
       case 'D':
-	buf_d = strdup(optarg);
-	break;
+        buf_d = strdup(optarg);
+        break;
       case '@':
-	buf_at = strdup(optarg);
-	break;
+        buf_at = strdup(optarg);
+        break;
       case '?':
-	 if (optopt == 'D' || optopt == '@') {
-	   fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-	 }
-	 else if (isprint(optopt)) {
-	   fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-	 }
-	 else {
-	   fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
-	 }
-	 return 1;
+        if (optopt == 'D' || optopt == '@') {
+          fprintf(stderr, "Option -%c requires an argument.\n"
+                  , optopt);
+        }
+        else if (isprint(optopt)) {
+          fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+        }
+        else {
+          fprintf(stderr, "Unknown option character `\\x%x'.\n"
+                  , optopt);
+        }
+        return 1;
       default:
-	abort();
-	break;
+        abort();
+        break;
       }
   }
   
@@ -111,16 +113,16 @@ int main(int argc, char** argv) {
       if (fgets_rc == NULL) break;
       chomp(buffer, '\n');
       int sscanf_rc = sscanf(buffer, "# %d \%[^\"]\"",
-			     &line, filename);
+                             &line, filename);
       if (sscanf_rc==2) continue;
       char *savepos = NULL;
       char *bufptr = buffer;
       
       for (int tokenct = 1 ;; ++tokenct) {
-	char *token = strtok_r(bufptr, " \t\n", &savepos);
-	bufptr = NULL;
-	if (token == NULL) break;
-	intern_stringset(token);
+        char *token = strtok_r(bufptr, " \t\n", &savepos);
+        bufptr = NULL;
+        if (token == NULL) break;
+        intern_stringset(token);
       }
       ++line;
     }
