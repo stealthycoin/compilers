@@ -17,7 +17,10 @@
 #define LINESIZE 1024
 
 using namespace std;
+
+int exit_status = EXIT_SUCCESS;
 char  *program;
+
 void syswarn (char *problem) {
    fflush (NULL);
    fprintf (stderr, "%s: %s: %s\n",
@@ -84,8 +87,6 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Only one program to compile at a time.\n");
   }
 
-
-
   strcpy(filename, argv[optind]);
   program = strdup(basename(filename));
 
@@ -100,10 +101,11 @@ int main(int argc, char** argv) {
     syswarn((char*)command.c_str());
   } 
 
+
   else {
     int line = 1;
     char buffer[LINESIZE];
-
+    
     for (;;) {
       char *fgets_rc = fgets(buffer, LINESIZE, pipe);
       if (fgets_rc == NULL) break;
@@ -124,14 +126,15 @@ int main(int argc, char** argv) {
     }
     
     int pclose_i = pclose(pipe);
-    eprint_status(command.c_str(), pclose_i);
     if(pclose_i != 0) set_exitstatus( EXIT_FAILURE );
-    
-    string programstr = string(program) + ".str";
-    FILE *strfi = fopen(programstr.c_str(), "w");
-    dump_stringset(strfi);
-    fclose(strfi);
+    else{
+      eprint_status(command.c_str(), pclose_i);
+      string programstr = string(program) + ".str";
+      FILE *strfi = fopen(programstr.c_str(), "w");
+      dump_stringset(strfi);
+      fclose(strfi);
+    }
   }
   free(program);
-  return 0;
+  return get_exitstatus();
 }
