@@ -2,164 +2,125 @@
 // Name: John Carlyle Username: jcarlyle@ucsc.edu
 // Name: Morgan McDermott Username: moamcderxf@ucsc.edu
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <libgen.h>
-#include <errno.h>
-#include "auxlib.h"
-#include "stringset.h"
-#include "lyutils.h"
+
 #include <string>
-#include <iostream>
-
-#define BUF_SIZE 128
-#define LINESIZE 1024
-
+#include <vector>
 using namespace std;
 
-extern FILE *yyin; 
-int exit_status = EXIT_SUCCESS;
-char  *program;
+#include <assert.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <iostream>
 
-void syswarn (char *problem) {
-  fflush (NULL);
-  fprintf (stderr, "%s: %s: %s\n",
-           program, problem, strerror (errno));
-  fflush (NULL);
-  set_exitstatus(EXIT_FAILURE);
+#include "astree.h"
+#include "auxlib.h"
+#include "emit.h"
+#include "lyutils.h"
+#include "stringset.h"
+
+extern FILE *yyin;
+const string cpp_name = "/usr/bin/cpp";
+string yyin_cpp_command;
+
+// Open a pipe from the C preprocessor.
+// Exit failure if can't.
+// Assignes opened pipe to FILE* yyin.
+void yyin_cpp_popen (const char* filename) {
+   yyin_cpp_command = cpp_name;
+   yyin_cpp_command += " ";
+   yyin_cpp_command += filename;
+   yyin = popen (yyin_cpp_command.c_str(), "r");
+   if (yyin == NULL) {
+      syserrprintf (yyin_cpp_command.c_str());
+      exit (get_exitstatus());
+   }
 }
 
-void chomp (char *string, char delim) {
-  size_t len = strlen (string);
-  if (len == 0) return;
-  char *nlpos = string + len - 1;
-  if (*nlpos == delim) *nlpos = '\0';
+void yyin_cpp_pclose (void) {
+   int pclose_rc = pclose (yyin);
+   eprint_status (yyin_cpp_command.c_str(), pclose_rc);
+   if (pclose_rc != 0) set_exitstatus (EXIT_FAILURE);
+}
+
+bool want_echo () {
+   return not (isatty (fileno (stdin)) and isatty (fileno (stdout)));
 }
 
 
-void readScanner(std::string basename)
+void readFromScanner(const char *fn)
 {
-  
-  std::string tokFilename = basename + ".tok";
-  FILE *ly_tokFile=fopen(tokFilename.c_str(),"w");
-  //assert(ly_tokFile!=NULL);
-  for(;;)
+    char *filename = strdup(fn);
+    char *tokFilename=strcat(strtok(
+                                   basename(filename),"."),".tok");
+    FILE *ly_tokFile=fopen(tokFilename,"w");
+    assert(ly_tokFile!=NULL);
+    for(;;)
     {
-      if(yylex()==YYEOF)
-        break;
+       if(yylex()==YYEOF)
+          break;
     }
-  fclose(ly_tokFile);
-  //freeFileStack();
-  //dumpTableToFile(filename);
+    fclose(ly_tokFile);
+    //freeFileStack();
+    //    dumpTableToFile(filename);
 }
 
-int main(int argc, char** argv) {
-  //set flags for boolean arguments
-  char* buf_d = NULL; 
-  char* buf_at = NULL;
-  char* program = NULL;
-  char filename[BUF_SIZE];
-  
-  int yy_flex_debug = 0;
-  int yydebug = 0;
-    
-  //process arguments
-  int c;
-  while ((c = getopt(argc, argv, "lyD:@:")) != -1) {
-    switch (c) 
-      {
-      case 'l':
-        yy_flex_debug = 1;
-        break;
-      case 'y':
-        yydebug = 1;
-        break;
-      case 'D':
-        buf_d = strdup(optarg);
-        break;
-      case '@':
-        buf_at = strdup(optarg);
-        break;
-      case '?':
-        if (optopt == 'D' || optopt == '@') {
-          fprintf(stderr, "Option -%c requires an argument.\n"
-                  , optopt);
-        }
-        else if (isprint(optopt)) {
-          fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-        }
-        else {
-          fprintf(stderr, "Unknown option character `\\x%x'.\n"
-                  , optopt);
-        }
-        return 1;
-      default:
-        abort();
-        break;
+
+
+void scan_opts (int argc, char** argv) {
+   int option;
+   opterr = 0;
+   yy_flex_debug = 0;
+   yydebug = 0;
+   for(;;) {
+      option = getopt (argc, argv, "@:ely");
+      if (option == EOF) break;
+      switch (option) {
+         case '@': set_debugflags (optarg);   break;
+         case 'l': yy_flex_debug = 1;         break;
+         case 'y': yydebug = 1;               break;
+         default:  errprintf ("%:bad option (%c)\n", optopt); break;
       }
-  }
-  
-  free(buf_d);
-  free(buf_at);
+   }
+   if (optind > argc) {
+      errprintf ("Usage: %s [-ly] [filename]\n", get_execname());
+      exit (get_exitstatus());
+   }
+   const char* filename = optind == argc ? "-" : argv[optind];
+   yyin_cpp_popen (filename);
+   DEBUGF ('m', "filename = %s, yyin = %p, fileno (yyin) = %d\n",
+           filename, yyin, fileno (yyin));
+   scanner_newfilename (filename);
+   //readFromScanner(filename);
+}
 
-  if (argc - optind > 1) {
-    fprintf(stderr, "Only one program to compile at a time.\n");
-  }
-
-  strcpy(filename, argv[optind]);
-  program = strdup(basename(filename));
-
-  string command = "/usr/bin/cpp";
-  if (buf_d != NULL) {
-    command += " -D" + string(buf_d);
-  }
-  command += " " + string(filename);
-  FILE *pipe = popen(command.c_str(), "r");
-
-  if (pipe == NULL) {
-    syswarn((char*)command.c_str());
-  } 
-
-
-  else {
-    int line = 1;
-    char buffer[LINESIZE];
-    
-    for (;;) {
-      char *fgets_rc = fgets(buffer, LINESIZE, pipe);
-      if (fgets_rc == NULL) break;
-      chomp(buffer, '\n');
-      int sscanf_rc = sscanf(buffer, "# %d \%[^\"]\"",
-                             &line, filename);
-      if (sscanf_rc==2) continue;
-      char *savepos = NULL;
-      char *bufptr = buffer;
-      
-      for (int tokenct = 1 ;; ++tokenct) {
-        char *token = strtok_r(bufptr, " \t\n", &savepos);
-        bufptr = NULL;
-        if (token == NULL) break;
-        intern_stringset(token);
+int main (int argc, char** argv) {
+   int parsecode = 0;
+   set_execname (argv[0]);
+   DEBUGSTMT ('m',
+      for (int argi = 0; argi < argc; ++argi) {
+         eprintf ("%s%c", argv[argi], argi < argc - 1 ? ' ' : '\n');
       }
-      ++line;
-    }
-    
-    int pclose_i = pclose(pipe);
-    if(pclose_i != 0) set_exitstatus( EXIT_FAILURE );
-    else{
-      eprint_status(command.c_str(), pclose_i);
-      string programstr = string(program) + ".str";
-      FILE *strfi = fopen(programstr.c_str(), "w");
-      dump_stringset(strfi);
-      fclose(strfi);
-    }
-  }
-  
-  readScanner(string(program));
-  free(program);
+   );
+   scan_opts (argc, argv);
+   scanner_setecho (want_echo());
+   parsecode = yyparse();
 
-  
-  return get_exitstatus();
+   if (parsecode) {
+      errprintf ("%:parse failed (%d)\n", parsecode);
+   }else {
+      DEBUGSTMT ('a', dump_astree (stderr, yyparse_astree); );
+      emit_sm_code (yyparse_astree);
+   }
+
+   yylex();
+   
+   free_ast (yyparse_astree); //This line segfaults for as yet unknown reason
+   yyin_cpp_pclose();
+
+   DEBUGSTMT ('s', dump_stringset (stderr); );
+   yylex_destroy();
+   return get_exitstatus();
 }

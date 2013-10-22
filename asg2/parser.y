@@ -50,7 +50,6 @@ bool is_defined_token (int symbol) {
 
 static void* yycalloc (size_t size) {
    void* result = calloc (1, size);
-   assert (result != NULL);
+   //assert (result != NULL);
    return result;
 }
-
