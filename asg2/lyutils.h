@@ -11,6 +11,7 @@
 #define YYEOF 0
 
 extern FILE* yyin;
+extern FILE* ly_tokFile;
 extern astree* yyparse_astree;
 extern int yyin_linenr;
 extern char* yytext;

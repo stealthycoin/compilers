@@ -5,7 +5,8 @@
 GPP = g++ -g -O0 -Wall -Wextra -std=gnu++0x
 executable = oc
 objects = main.o auxlib.o stringset.o
-SUBMITS = main.cc auxlib.cc auxlib.h stringset.cc stringset.h Makefile README PARTNER
+SUBMITS = main.cc auxlib.cc auxlib.h stringset.cc \
+    stringset.h Makefile README PARTNER
 PROJECT = cmps104a-wm.f13 asg1
 
 all: $(objects)

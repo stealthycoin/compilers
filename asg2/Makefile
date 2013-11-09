@@ -1,4 +1,6 @@
-# $Id: Makefile,v 1.11 2013-10-15 16:37:56-07 - - $
+#This assignment completed with pair programming
+# Name: John Carlyle Username: jcarlyle@ucsc.edu
+# Name: Morgan McDermott Username: moamcder@ucsc.edu
 
 MKFILE    = Makefile
 DEPSFILE  = ${MKFILE}.deps
@@ -9,11 +11,11 @@ VALGRIND  = valgrind --leak-check=full --show-reachable=yes
 #
 # Definitions of list of files:
 #
-HSOURCES  = astree.h  emit.h lyutils.h  auxlib.h  stringset.h
-CSOURCES  = astree.cc emit.cc lyutils.cc auxlib.cc stringset.cc main.cc
+HSOURCES  = astree.h  lyutils.h  auxlib.h  stringset.h
+CSOURCES  = astree.cc lyutils.cc auxlib.cc stringset.cc main.cc
 LSOURCES  = scanner.l
 YSOURCES  = parser.y
-ETCSRC    = README ${MKFILE} ${DEPSFILE}
+ETCSRC    = README PARTNER ${MKFILE} ${DEPSFILE}
 CLGEN     = yylex.cc
 HYGEN     = yyparse.h
 CYGEN     = yyparse.cc
@@ -29,6 +31,8 @@ REPORTS   = ${LREPORT} ${YREPORT} ${IREPORT}
 ALLSRC    = ${ETCSRC} ${YSOURCES} ${LSOURCES} ${HSOURCES} ${CSOURCES}
 TESTINS   = ${wildcard test?.in}
 LISTSRC   = ${ALLSRC} ${HYGEN}
+SUBMITS   = ${HSOURCES} ${CSOURCES} ${LSOURCES} ${YSOURCES} ${ETCSRC}
+PROJECT   = cmps104a-wm.f13 asg1
 
 #
 # Definitions of the compiler and compilation options:
@@ -95,6 +99,12 @@ clean :
 
 spotless : clean
 	- rm ${EXECBIN} List.*.ps List.*.pdf
+	- rm *.tok
+	- rm *.str
+	- rm *.oc
+	- rm *.log
+	- rm *.out
+	- rm *.err
 
 
 #
@@ -122,11 +132,17 @@ tests : ${EXECBIN}
 	) 1>$*.out 2>$*.err
 
 #
+# Submit
+# 
+#submit: ${SUBMITS}
+#	submit ${PROJECT} ${SUBMITS}
+
+#
 # Everything
 #
 again :
 	gmake --no-print-directory spotless deps ci all lis
-	
+
 ifeq "${NEEDINCL}" ""
 include ${DEPSFILE}
 endif

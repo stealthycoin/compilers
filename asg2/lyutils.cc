@@ -9,9 +9,11 @@ using namespace std;
 #include <stdlib.h>
 #include <string.h>
 
+#include "stringset.h"
 #include "lyutils.h"
 #include "auxlib.h"
 
+FILE *ly_tokFile;
 astree* yyparse_astree = NULL;
 int scan_linenr = 1;
 int scan_offset = 0;
@@ -67,8 +69,17 @@ void scanner_badtoken (char* lexeme) {
 
 int yylval_token (int symbol) {
    int offset = scan_offset - yyleng;
+
+   //insert to the hashtable
+   const std::string *tmp =intern_stringset(yytext);
    yylval = new_astree (symbol, included_filenames.size() - 1,
-                        scan_linenr, offset, yytext);
+                        //filename_stack.last_filenr,
+                        scan_linenr, offset, tmp->c_str());
+   std::string formattedYytext;
+   formattedYytext = "(" + std::string(yytext) + ")";
+   fprintf(ly_tokFile,"%3d%4d.%03d   %-5d%-15s%s\n",yylval->filenr, 
+           yylval->linenr,yylval->offset,yylval->symbol,
+           get_yytname(yylval->symbol),formattedYytext.c_str());
    return symbol;
 }
 
@@ -77,7 +88,7 @@ astree* new_parseroot (void) {
    return yyparse_astree;
 }
 
-
+
 void scanner_include (void) {
    scanner_newline();
    char filename[strlen (yytext) + 1];
@@ -88,7 +99,7 @@ void scanner_include (void) {
       errprintf ("%: %d: [%s]: invalid directive, ignored\n",
                  scan_rc, yytext);
    }else {
-      printf (";# %d \"%s\"\n", linenr, filename);
+      fprintf (ly_tokFile, ";# %d \"%s\"\n", linenr, filename);
       scanner_newfilename (filename);
       scan_linenr = linenr - 1;
       DEBUGF ('m', "filename=%s, scan_linenr=%d\n",

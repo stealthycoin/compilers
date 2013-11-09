@@ -2,7 +2,6 @@
 // Name: John Carlyle Username: jcarlyle@ucsc.edu
 // Name: Morgan McDermott Username: moamcderxf@ucsc.edu
 
-
 #include <string>
 #include <vector>
 using namespace std;
@@ -15,13 +14,21 @@ using namespace std;
 #include <unistd.h>
 #include <iostream>
 
+
+#include <libgen.h>
+#include <getopt.h>
+#include <assert.h>
+
+
 #include "astree.h"
 #include "auxlib.h"
-#include "emit.h"
+//#include "emit.h"
 #include "lyutils.h"
 #include "stringset.h"
 
+extern FILE *ly_tokFile;
 extern FILE *yyin;
+
 const string cpp_name = "/usr/bin/cpp";
 string yyin_cpp_command;
 
@@ -50,25 +57,6 @@ bool want_echo () {
 }
 
 
-void readFromScanner(const char *fn)
-{
-    char *filename = strdup(fn);
-    char *tokFilename=strcat(strtok(
-                                   basename(filename),"."),".tok");
-    FILE *ly_tokFile=fopen(tokFilename,"w");
-    assert(ly_tokFile!=NULL);
-    for(;;)
-    {
-       if(yylex()==YYEOF)
-          break;
-    }
-    fclose(ly_tokFile);
-    //freeFileStack();
-    //    dumpTableToFile(filename);
-}
-
-
-
 void scan_opts (int argc, char** argv) {
    int option;
    opterr = 0;
@@ -93,11 +81,11 @@ void scan_opts (int argc, char** argv) {
    DEBUGF ('m', "filename = %s, yyin = %p, fileno (yyin) = %d\n",
            filename, yyin, fileno (yyin));
    scanner_newfilename (filename);
-   //readFromScanner(filename);
 }
 
 int main (int argc, char** argv) {
    int parsecode = 0;
+   new_parseroot();
    set_execname (argv[0]);
    DEBUGSTMT ('m',
       for (int argi = 0; argi < argc; ++argi) {
@@ -106,21 +94,32 @@ int main (int argc, char** argv) {
    );
    scan_opts (argc, argv);
    scanner_setecho (want_echo());
-   parsecode = yyparse();
-
-   if (parsecode) {
-      errprintf ("%:parse failed (%d)\n", parsecode);
-   }else {
-      DEBUGSTMT ('a', dump_astree (stderr, yyparse_astree); );
-      emit_sm_code (yyparse_astree);
-   }
-
-   yylex();
    
-   free_ast (yyparse_astree); //This line segfaults for as yet unknown reason
+   char *filename = strdup(argv[optind]);
+   char *program = strdup(basename(filename));
+   ly_tokFile=fopen((string(program)+".tok").c_str(),"w");
+   assert(ly_tokFile!=NULL);
+   for(;;)
+     {
+       if(yylex()==YYEOF)
+         break;
+       //Temporarily we shall adopt each astree
+       // so that they get appropriately freed
+       adopt1(yyparse_astree, yylval);
+     }
+   fclose(ly_tokFile);
+   
+   free_ast (yyparse_astree); 
    yyin_cpp_pclose();
 
+   string programstr = string(program) + ".str";
+   FILE *strfi = fopen(programstr.c_str(), "w");
+   dump_stringset(strfi);
+   fclose(strfi);
+   
    DEBUGSTMT ('s', dump_stringset (stderr); );
    yylex_destroy();
+   free(filename);
+   free(program);
    return get_exitstatus();
 }
