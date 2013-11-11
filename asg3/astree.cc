@@ -1,6 +1,6 @@
 //This assignment completed with pair programming
 // Name: John Carlyle Username: jcarlyle@ucsc.edu
-// Name: Morgan McDermott Username: moamcder@ucsc.edu
+// Name: Morgan McDermott Username: moamcderxf@ucsc.edu
 
 #include <assert.h>
 #include <inttypes.h>
@@ -10,49 +10,55 @@
 #include <string.h>
 
 #include "astree.h"
-#include "stringset.h"
+#include "astree.rep.h"
 #include "lyutils.h"
+#include "stringset.h"
 
-static string astree_tag = "struct astree_rep";
+static char *astree_tag = "struct astree_rep";
 
 bool is_astree (void *object) {
    astree tree = (astree) object;
    return tree != NULL && tree->tag == astree_tag;
 }
-
-astree new_astree (int symbol, int filenr, int linenr, int offset, char* lexinfo) {
-  astree tree = (astree)malloc(sizeof(struct astree_rep));
-  tree->symbol = symbol;
-  tree->filenr = filenr;
-  tree->linenr = linenr;
-  tree->offset = offset;
-  tree->lexinfo = intern_stringset (lexinfo);
-  DEBUGF ('f', "astree %p->{%d:%d.%d: %s: \"%s\"}\n",
-	  tree, tree->filenr, tree->linenr, tree->offset,
-	  get_yytname (tree->symbol), tree->lexinfo->c_str());
-  return tree;
-}
-
-
 astree func_astree(int symbol, astree obj){
-  astree tree = (astree)malloc (sizeof(struct astree_rep));
-  tree->tag = astree_tag;
-  tree->symbol = symbol;
-  tree->filenr = obj->filenr;
-  tree->linenr = obj->linenr;
-  tree->offset = obj->offset;
-  tree->lexinfo = intern_stringset("");
-  tree->first = NULL;
-  tree->last = NULL;
-  tree->next = NULL;
-  return tree;
+   size_t size = sizeof (struct astree_rep);
+   astree tree = (astree)malloc (size);
+   tree->tag = astree_tag;
+   tree->symbol = symbol;
+   tree->filenr = obj->filenr;
+   tree->linenr = obj->linenr;
+   tree->offset = obj->offset;
+   tree->lexinfo = intern_stringset(""); 
+   tree->first = NULL;
+   tree->last = NULL;
+   tree->next = NULL;
+   return tree;
 }
 
-
-void changeIFproto(astree root, astree block){
-   if(block->symbol==';') root->symbol=TOK_PROTOTYPE;
+astree new_astree (int symbol, int filenr, int linenr, int offset,
+                   const char* lexinfo) {
+   size_t size = sizeof (struct astree_rep);
+   astree tree = (astree)malloc (size);
+   assert (tree != NULL);
+   tree->tag = astree_tag;
+   tree->symbol = symbol;
+   tree->filenr = filenr;
+   tree->linenr = linenr;
+   tree->offset = offset;
+   tree->lexinfo = intern_stringset(lexinfo);
+   //initially its going to be null
+   //for now, no reason to check
+   assert (tree->lexinfo != NULL);
+   tree->first = NULL;
+   tree->last = NULL;
+   tree->next = NULL;
+   DEBUGF ('f', "malloc (%d) = %p-> %d:%d.%d: %s: %p->\"%s\"\n",
+           size, tree, tree->filenr, tree->linenr, tree->offset,
+           get_yytname (tree->symbol), tree->lexinfo, tree->lexinfo);
+   return tree;
 }
 
+
 astree adopt (astree root, ...) {
    va_list children;
    assert (is_astree (root));
@@ -72,25 +78,17 @@ astree adopt (astree root, ...) {
    return root;
 }
 
-
-astree adopt1 (astree root, astree child) {
-   root->children.push_back (child);
-   DEBUGF ('a', "%p (%s) adopting %p (%s)\n",
-           root, root->lexinfo->c_str(),
-           child, child->lexinfo->c_str());
-   return root;
-}
-
-astree adopt2 (astree root, astree left, astree right) {
-   adopt1 (root, left);
-   adopt1 (root, right);
-   return root;
-}
-
 astree adopt3(astree root, astree child1, astree child2, astree child3){
    return adopt(root, child1, child2, child3, NULL);
 }
 
+astree adopt2 (astree root, astree left, astree right) {
+   return adopt (root, left, right, NULL);
+}
+
+astree adopt1 (astree root, astree child) {
+   return adopt (root, child, NULL);
+}
 
 astree adopt1sym (astree root, astree child, int symbol) {
    root = adopt1 (root, child);
@@ -98,73 +96,107 @@ astree adopt1sym (astree root, astree child, int symbol) {
    return root;
 }
 
+astree adopt2sym (astree root, astree child1,
+                  astree child2, int symbol){
+   root = adopt2(root, child1, child2);
+   root->symbol = symbol;
+   return root;
+}
+
+astree adopt3sym (astree root, astree child1,
+                  astree child2,  astree child3, int symbol){
+   root = adopt3(root, child1, child2, child3);
+   root->symbol = symbol;
+   return root;
+}
 
 void changeSYM (astree ast, int symbol){
    ast->symbol = symbol;
 }
 
-
-static void dump_node (FILE* outfile, astree node) {
-   fprintf (outfile, "%p->{%s(%d) %d:%d.%03d \"%s\" [",
-            node, get_yytname (node->symbol), node->symbol,
-            node->filenr, node->linenr, node->offset,
-            node->lexinfo->c_str());
-   bool need_space = false;
-   for (size_t child = 0; child < node->children.size();
-        ++child) {
-      if (need_space) fprintf (outfile, " ");
-      need_space = true;
-      fprintf (outfile, "%p", node->children.at(child));
-   }
-   fprintf (outfile, "]}");
+void changeIFproto(astree root, astree block)
+{
+   if(block->symbol==';') root->symbol=TOK_PROTOTYPE;
 }
 
-static void dump_astree_rec (FILE* outfile, astree root,
-                             int depth) {
+
+static void dump_node (FILE *outfile, astree node, int depth) {
+   assert (is_astree (node));
+   for(int i =0 ;i<depth;i++)
+       fprintf(outfile,"  ");
+   /*fprintf (outfile, "%s \"%s\" %d.%d.%d",get_yytname (node->symbol),
+	                               node->lexinfo->c_str(),
+                                       node->filenr, node->linenr, 
+                                       node->offset);
+   */
+   /*fprintf (outfile, "%s \"%s\" ",get_yytname (node->symbol),
+     node->lexinfo->c_str());*/
+
+     string out = "";
+       switch(node->symbol){
+       case TOK_ROOT: out = "program"; break;
+       case TOK_VOID: out = "void"; break;
+       case TOK_PROTOTYPE: out = "prototype"; break;
+       case TOK_ARRAY: out = "array"; break;
+       case TOK_WHILE: out = "while"; break;
+       case TOK_VARIABLE: out = "variable"; break;
+       case TOK_BLOCK: out = "block"; break;
+       case TOK_BINOP: out = "binop"; break;
+       case TOK_UNOP: out = "unop"; break;
+       case TOK_CALL: out = "call"; break;
+       case TOK_CONSTANT: out = "constant"; break;
+       case TOK_VARDECL: out = "vardecl"; break;
+       case TOK_BASETYPE: out = "basetype"; break;
+       case TOK_TYPE: out = "type"; break;
+       default: out = string(get_yytname(node->symbol)) + " (" + *(node->lexinfo)+")"; break;
+       }
+     fprintf (outfile, "%s", out.c_str());
+}
+
+static void dump_astree_rec (FILE *outfile, astree root, int depth) {
+   astree child = NULL;
    if (root == NULL) return;
-   fprintf (outfile, "%*s%s ", depth * 3, "",
-            root->lexinfo->c_str());
-   dump_node (outfile, root);
+   assert (is_astree (root));
+   dump_node (outfile, root, depth);
    fprintf (outfile, "\n");
-   for (size_t child = 0; child < root->children.size();
-        ++child) {
-      dump_astree_rec (outfile, root->children[child],
-                       depth + 1);
+   for (child = root->first; child != NULL; child = child->next) {
+      dump_astree_rec (outfile, child, depth + 1);
    }
 }
 
-void dump_astree (FILE* outfile, astree root) {
+void dump_astree (FILE *outfile, astree root) {
    dump_astree_rec (outfile, root, 0);
    fflush (NULL);
 }
 
-void yyprint (FILE* outfile, unsigned short toknum,
-              astree yyvaluep) {
-   if (is_defined_token (toknum)) {
-      dump_node (outfile, yyvaluep);
-   }else {
-      fprintf (outfile, "%s(%d)\n",
-               get_yytname (toknum), toknum);
+void yyprint (FILE *outfile, unsigned short toknum, astree yyvaluep) {
+   fprintf (outfile, "%d=%s)\n%*s(",
+             toknum, get_yytname (toknum), 9, "");
+   if (is_astree (yyvaluep)) {
+      dump_node (outfile, yyvaluep, 3);
+   }else{
+      fprintf (outfile, "yyvaluep = %p", (void*) yyvaluep);
    }
    fflush (NULL);
 }
 
-
-void free_ast (astree root) {
-   while (not root->children.empty()) {
-      astree child = root->children.back();
-      root->children.pop_back();
-      free_ast (child);
+void freeast (astree root) {
+  return;
+   astree child = NULL;
+   if (root == NULL) return;
+   assert (is_astree (root));
+   for (child = root->first; child != NULL;) {
+      astree asttofree = child;
+      assert (is_astree (asttofree));
+      child = child->next;
+      freeast (asttofree);
    }
-   DEBUGF ('f', "free [%p]-> %d:%d.%d: %s: \"%s\")\n",
-           root, root->filenr, root->linenr, root->offset,
-           get_yytname (root->symbol), root->lexinfo->c_str());
-   delete root;
-}
-
-void free_ast2 (astree tree1, astree tree2) {
-   free_ast (tree1);
-   free_ast (tree2);
+   DEBUGF ('f', "free [%X]-> %d:%d.%d: %s: %p->\"%s\")\n",
+           (uintptr_t) root, root->filenr, root->linenr, root->offset,
+            get_yytname (root->symbol), root->lexinfo, root->lexinfo);
+   //free (root->lexinfo);
+   memset (root, 0, sizeof (struct astree_rep));
+   free (root);
 }
 
 

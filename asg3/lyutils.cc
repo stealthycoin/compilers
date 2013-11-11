@@ -9,6 +9,7 @@ using namespace std;
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "stringset.h"
 #include "lyutils.h"
 #include "auxlib.h"
@@ -74,7 +75,7 @@ int yylval_token (int symbol) {
    const std::string *tmp =intern_stringset(yytext);
    yylval = new_astree (symbol, included_filenames.size() - 1,
                         //filename_stack.last_filenr,
-                        scan_linenr, offset, tmp->c_str());
+			scan_linenr, offset, tmp->c_str());
    std::string formattedYytext;
    formattedYytext = "(" + std::string(yytext) + ")";
    fprintf(ly_tokFile,"%3d%4d.%03d   %-5d%-15s%s\n",yylval->filenr, 

@@ -96,7 +96,6 @@ spotless : clean
 	- rm ${EXECBIN} List.*.ps List.*.pdf
 	- rm *.tok
 	- rm *.str
-	- rm *.oc
 	- rm *.log
 	- rm *.out
 	- rm *.err

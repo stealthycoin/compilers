@@ -6,6 +6,11 @@
 #include <stdio.h>
 
 #include "astree.h"
+
+#define YYSTYPE astree
+#include "yyparse.h"
+
+
 #include "auxlib.h"
 
 #define YYEOF 0
@@ -40,7 +45,7 @@ int yylval_token (int symbol);
 void scanner_include (void);
 
 
-#define YYSTYPE astree
-#include "yyparse.h"
+
+
 
 #endif

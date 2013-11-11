@@ -1,10 +1,7 @@
-/* This assignment completed with pair programming
- Name: John Carlyle Username: jcarlyle@ucsc.edu
- Name: Morgan McDermott Username: moamcder@ucsc.edu
-*/
-
 %{
-
+//This assignment completed with pair programming
+// Name: John Carlyle Username: jcarlyle@ucsc.edu
+// Name: Morgan McDermott Username: moamcder@ucsc.edu
 #include <stdlib.h>
 #include <stdbool.h>
 #include "auxlib.h"
@@ -95,6 +92,7 @@ CHR_NOT_CLOSE2 (\'([\\'\n]|\\[\\'"0nt]))
 "!="            { return yylval_token(TOK_NE);    }
 
   
+
 {INVLIDENT}             { scanner_badtoken(yytext);}    
 {STR_NOT_CLOSE}         { scanner_badtoken (yytext);}
 {STR_NOT_CLOSE2}        { scanner_badtoken (yytext);}
@@ -102,13 +100,17 @@ CHR_NOT_CLOSE2 (\'([\\'\n]|\\[\\'"0nt]))
 {CHR_NOT_CLOSE2}        { scanner_badtoken (yytext);}
 {NOTNUMBER}             { scanner_badtoken (yytext);
                           return yylval_token (TOK_INTCON); }
+
 .                       { scanner_badchar (*yytext); }
 
 
 %%
 
+// unset: %option noyywrap
 int yywrap (void){
    yy_delete_buffer (YY_CURRENT_BUFFER);
    if (yy_flex_debug) eprintf ("yywrap() return %d\n", true);
    return true;
 }
+
+
