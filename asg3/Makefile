@@ -32,7 +32,7 @@ ALLSRC    = ${ETCSRC} ${YSOURCES} ${LSOURCES} ${HSOURCES} ${CSOURCES}
 TESTINS   = ${wildcard test?.in}
 LISTSRC   = ${ALLSRC} ${HYGEN}
 SUBMITS   = ${HSOURCES} ${CSOURCES} ${LSOURCES} ${YSOURCES} ${ETCSRC}
-PROJECT   = cmps104a-wm.f13 asg1
+PROJECT   = cmps104a-wm.f13 asg3
 
 #
 # Definitions of the compiler and compilation options:

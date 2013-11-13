@@ -33,7 +33,7 @@ struct astree_rep {
 bool is_astree (void *object);
 astree new_astree (int symbol, int filenr, int linenr, int offset,
                    const char *lexinfo);
-astree adopt (astree root, /*ASTree*/ ... /*, NULL */);
+astree adopt (astree root, ...);
 astree adopt1 (astree root, astree child);
 astree adopt2 (astree root, astree left, astree right);
 astree adopt3(astree root, astree child1, astree child2,astree child3);

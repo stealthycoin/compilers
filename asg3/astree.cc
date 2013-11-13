@@ -58,7 +58,7 @@ astree new_astree (int symbol, int filenr, int linenr, int offset,
    return tree;
 }
 
-
+
 astree adopt (astree root, ...) {
    va_list children;
    assert (is_astree (root));

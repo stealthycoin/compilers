@@ -23,15 +23,15 @@ static void *yycalloc (size_t size);
 %verbose
 %start start
 
-%token TOK_VOID TOK_BOOL TOK_CHAR TOK_INT TOK_STRING
+%token TOK_VOID TOK_BOOL TOK_CHAR TOK_INT TOK_STRING TOK_ROOT
 %token TOK_IF TOK_ELSE TOK_WHILE TOK_RETURN TOK_STRUCT
 %token TOK_FALSE TOK_TRUE TOK_NULL TOK_NEW TOK_ARRAY 
 %token TOK_EQ TOK_NE TOK_LT TOK_LE TOK_GT TOK_GE
 %token TOK_IDENT TOK_INTCON TOK_CHARCON TOK_STRINGCON TOK_VARIABLE
-%token TOK_ORD TOK_CHR TOK_ROOT TOK_DECLID TOK_PROTOTYPE TOK_TYPE TOK_BASETYPE
+%token TOK_ORD TOK_CHR TOK_DECLID TOK_PROTOTYPE TOK_TYPE TOK_BASETYPE
 
 %token TOK_BLOCK TOK_BINOP TOK_UNOP TOK_CALL TOK_IFELSE TOK_INITDECL TOK_VARDECL
-%token TOK_CONSTANT TOK_POS TOK_NEG TOK_TYPEID TOK_FIELD TOK_RETUNVOID TOK_NEWARRAY 
+%token TOK_CONSTANT TOK_POS TOK_NEG TOK_TYPEID TOK_FIELD  TOK_RETURNVOID TOK_NEWARRAY 
 %token TOK_NEWSTRING TOK_INDEX TOK_FUNCTION TOK_PARAMLIST 
 
 %right TOK_ELSE
@@ -82,9 +82,7 @@ fieldecl    : basetype TOK_IDENT           { $$=$2;
                                              $$ = adopt2 ($2, $1, $3);}
             ;
 
-type        : basetype                     {$$= adopt1(func_astree(TOK_TYPE, $1), $1);}         
-            | basetype '[]'                {$$= adopt1(func_astree(TOK_TYPE, $1), $1);}         
-            ;
+
 basetype    : TOK_VOID                     {$$=adopt1(func_astree(TOK_BASETYPE, $1), $1);}
             | TOK_BOOL                     {$$=adopt1(func_astree(TOK_BASETYPE, $1), $1);}
             | TOK_CHAR                     {$$=adopt1(func_astree(TOK_BASETYPE, $1), $1);}
@@ -163,7 +161,7 @@ ifelse      : TOK_IF '(' expr ')' statement TOK_ELSE statement
             ;
 
 return      : TOK_RETURN ';'         { $$ = $1;
-                                       changeSYM ($1,TOK_RETUNVOID);
+                                       changeSYM ($1,TOK_RETURNVOID);
                                        freeast($2);}
             | TOK_RETURN expr ';'    { $$=adopt1($1,$2);
                                        freeast($3);}
