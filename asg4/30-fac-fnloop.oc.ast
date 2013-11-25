@@ -1,0 +1,192 @@
+program
+  prototype
+    basetype
+      void
+      TOK_DECLID (__assert_fail)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_STRING (string)
+        TOK_DECLID (expr)
+      basetype
+        TOK_STRING (string)
+        TOK_DECLID (file)
+      basetype
+        TOK_INT (int)
+        TOK_DECLID (line)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (putb)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_BOOL (bool)
+        TOK_DECLID (b)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (putc)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_CHAR (char)
+        TOK_DECLID (c)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (puti)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_INT (int)
+        TOK_DECLID (i)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (puts)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_STRING (string)
+        TOK_DECLID (s)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (endl)
+    ';' (;)
+  prototype
+    basetype
+      TOK_INT (int)
+      TOK_DECLID (getc)
+    ';' (;)
+  prototype
+    basetype
+      TOK_STRING (string)
+      TOK_DECLID (getw)
+    ';' (;)
+  prototype
+    basetype
+      TOK_STRING (string)
+      TOK_DECLID (getln)
+    ';' (;)
+  prototype
+    array
+      basetype
+        TOK_STRING (string)
+      TOK_DECLID (getargv)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (exit)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_INT (int)
+        TOK_DECLID (status)
+    ';' (;)
+  TOK_FUNCTION ()
+    basetype
+      TOK_INT (int)
+      TOK_DECLID (fac)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_INT (int)
+        TOK_DECLID (n)
+    block
+      vardecl
+        basetype
+          TOK_INT (int)
+        TOK_IDENT (f)
+        constant
+          TOK_INTCON (1)
+      while
+        binop
+          variable
+            TOK_IDENT (n)
+          TOK_GT (>)
+          constant
+            TOK_INTCON (1)
+        block
+          binop
+            variable
+              TOK_IDENT (f)
+            '=' (=)
+            binop
+              variable
+                TOK_IDENT (f)
+              '*' (*)
+              variable
+                TOK_IDENT (n)
+          binop
+            variable
+              TOK_IDENT (n)
+            '=' (=)
+            binop
+              variable
+                TOK_IDENT (n)
+              '-' (-)
+              constant
+                TOK_INTCON (1)
+      TOK_RETURN (return)
+        variable
+          TOK_IDENT (f)
+  vardecl
+    basetype
+      TOK_INT (int)
+    TOK_IDENT (n)
+    constant
+      TOK_INTCON (1)
+  while
+    binop
+      variable
+        TOK_IDENT (n)
+      TOK_LE (<=)
+      constant
+        TOK_INTCON (5)
+    block
+      vardecl
+        basetype
+          TOK_INT (int)
+        TOK_IDENT (b)
+        constant
+          TOK_INTCON (5)
+      TOK_IFELSE (if)
+        binop
+          variable
+            TOK_IDENT (b)
+          TOK_GT (>)
+          constant
+            TOK_INTCON (2)
+        block
+          vardecl
+            basetype
+              TOK_INT (int)
+            TOK_IDENT (w)
+            constant
+              TOK_INTCON (22)
+        block
+          vardecl
+            basetype
+              TOK_INT (int)
+            TOK_IDENT (v)
+            constant
+              TOK_INTCON (33)
+      call
+        TOK_IDENT (puti)
+        call
+          TOK_IDENT (fac)
+          variable
+            TOK_IDENT (n)
+      call
+        TOK_IDENT (endl)
+      binop
+        variable
+          TOK_IDENT (n)
+        '=' (=)
+        binop
+          variable
+            TOK_IDENT (n)
+          '+' (+)
+          constant
+            TOK_INTCON (1)

@@ -1,0 +1,155 @@
+program
+  prototype
+    basetype
+      void
+      TOK_DECLID (__assert_fail)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_STRING (string)
+        TOK_DECLID (expr)
+      basetype
+        TOK_STRING (string)
+        TOK_DECLID (file)
+      basetype
+        TOK_INT (int)
+        TOK_DECLID (line)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (putb)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_BOOL (bool)
+        TOK_DECLID (b)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (putc)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_CHAR (char)
+        TOK_DECLID (c)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (puti)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_INT (int)
+        TOK_DECLID (i)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (puts)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_STRING (string)
+        TOK_DECLID (s)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (endl)
+    ';' (;)
+  prototype
+    basetype
+      TOK_INT (int)
+      TOK_DECLID (getc)
+    ';' (;)
+  prototype
+    basetype
+      TOK_STRING (string)
+      TOK_DECLID (getw)
+    ';' (;)
+  prototype
+    basetype
+      TOK_STRING (string)
+      TOK_DECLID (getln)
+    ';' (;)
+  prototype
+    array
+      basetype
+        TOK_STRING (string)
+      TOK_DECLID (getargv)
+    ';' (;)
+  prototype
+    basetype
+      void
+      TOK_DECLID (exit)
+    TOK_PARAMLIST (()
+      basetype
+        TOK_INT (int)
+        TOK_DECLID (status)
+    ';' (;)
+  TOK_FUNCTION ()
+    basetype
+      TOK_BOOL (bool)
+      TOK_DECLID (True)
+    block
+      TOK_RETURN (return)
+        constant
+          TOK_FALSE (false)
+  vardecl
+    basetype
+      TOK_INT (int)
+    TOK_IDENT (count)
+    constant
+      TOK_INTCON (50)
+  vardecl
+    basetype
+      TOK_INT (int)
+    TOK_IDENT (count2)
+    constant
+      TOK_TRUE (true)
+  vardecl
+    basetype
+      TOK_INT (int)
+    TOK_IDENT (someInt)
+    binop
+      binop
+        binop
+          binop
+            constant
+              TOK_INTCON (1)
+            '+' (+)
+            constant
+              TOK_INTCON (2)
+          '+' (+)
+          constant
+            TOK_INTCON (3)
+        '+' (+)
+        constant
+          TOK_INTCON (4)
+      '+' (+)
+      constant
+        TOK_TRUE (true)
+  while
+    binop
+      variable
+        TOK_IDENT (count)
+      TOK_LE (<=)
+      constant
+        TOK_INTCON (100)
+    block
+      binop
+        variable
+          TOK_IDENT (count)
+        '=' (=)
+        constant
+          TOK_TRUE (true)
+      binop
+        variable
+          TOK_IDENT (count2)
+        '=' (=)
+        constant
+          TOK_TRUE (true)
+      call
+        TOK_IDENT (puti)
+        variable
+          TOK_IDENT (count)
+      call
+        TOK_IDENT (endl)
