@@ -81,9 +81,29 @@ void assert_expr_type(string type, astree expression) {
     switch (expression->symbol) {
     case TOK_CALL:
       {
+	
+	string fn = *(expression->first->lexinfo);
 	string t = expression->scope->lookup(*(expression->first->lexinfo));
+
 	if (type != t.substr(0, type.length()))
-	  show_error("Function returns type "+t.substr(0, t.find("("))+", expected "+type, expression);
+	  show_error("Function returns type "+t.substr(0, t.find("("))
+		     +", expected "+type, expression);
+
+	string argType = "";
+	bool first = true;
+	astree plist = expression->first->next;
+	while(plist != NULL){
+	  if(first != true){ argType += ", "; }
+	  first = false; 
+	  argType += expr_type(plist);
+	  plist = plist->next; 
+	}
+	
+	string foundType = t.substr(0, t.find("(")) + "(" + argType + ")";
+	if(t != foundType)
+	  show_error("Wrong argument types given to function "+fn
+		     +"."+"\n\tGiven "+foundType.substr(foundType.find("("))
+		     +"\n\tExpected "+t.substr(t.find("(")), expression);
 	break;
       }
     case TOK_BINOP:
@@ -129,8 +149,15 @@ void typecheck(astree tree) {
   astree node = tree->first;
 
   while (node != NULL) {
-    
     switch (node->symbol) {
+    case TOK_CALL:
+      {
+	//We just need to type check the arguments for a 
+	// statement-level function call. 
+	string ret = node->scope->lookup(*(node->first->lexinfo));
+	assert_expr_type(ret, node);
+	break;
+      }
     case TOK_VARDECL:
       {
 	string leftType = *(node->first->first->lexinfo); 
@@ -144,6 +171,24 @@ void typecheck(astree tree) {
       assert_expr_type("bool", node->first);
       typecheck(node->last);
       break;
+    case TOK_IF:
+      assert_expr_type("bool", node->first);
+      typecheck(node->last);
+      break;
+    case TOK_IFELSE:
+      {
+	assert_expr_type("bool", node->first);
+	astree temp = node->first->next;
+	while(temp != NULL){
+	  if(temp->symbol == TOK_IF){
+	    assert_expr_type("bool", temp->first);
+	    typecheck(temp->last);
+	  }
+	  else typecheck(temp);
+	  temp = temp->next;
+	}
+	break;
+      }
     case TOK_BINOP:
       {
 	string op = *(node->first->next->lexinfo);
@@ -161,7 +206,31 @@ void typecheck(astree tree) {
 	}
       break;
       }
+    case TOK_RETURN:
+      {
+	string funType = node->scope->parentFunction(NULL);
+	string retType = funType.substr(0, funType.find("("));
+	string realRetType = expr_type(node->first);
+	if(retType != realRetType)
+	  show_error("Attempted to return type "+realRetType+", expected "+retType
+		     , node);
+	break;
+      }
+    case TOK_FUNCTION: 
+      {
+
+	typecheck(node->last);
+	break;
+      }
+    case TOK_PROTOTYPE:
+      {
+	break;
+      }
+    default:
+      printf("\t No case in typecheck for node type: %d\n", node->symbol);
+      break;
     }
+
   node = node->next;
   }
 }

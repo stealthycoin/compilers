@@ -100,7 +100,11 @@ void SymbolTable::switchOnTok(astree node)
 	  
 	block->populateTable(node->last); //populates next symbol table
       }
-
+      break;
+    case TOK_PROTOTYPE:
+      {
+	//printf("No symbol table case for TOK_PROTOTYPE\n`");
+      }
       break;
     case TOK_IF:
       {
