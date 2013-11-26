@@ -42,7 +42,6 @@ static void *yycalloc (size_t size);
 %right TOK_POS TOK_NEG '!' TOK_ORD TOK_CHR
 %left TOK_CALL '[' '.' 
 
-
 %nonassoc TOK_NEW
 %nonassoc TOK_PAREN
 
@@ -111,10 +110,15 @@ paramlist   : paramlist ',' identdecl { $$ = adopt1($1,$3);
                                         $$ = adopt1($1,$2);}
             ;
 
-identdecl   : basetype TOK_ARRAY TOK_IDENT {changeSYM ($3,TOK_DECLID);
-                                            $$ = adopt2 ($2, $1, $3);}
-            | basetype TOK_IDENT           {changeSYM ($2,TOK_DECLID);
-                                            $$ = adopt1 ($1, $2);}
+
+
+decl        : basetype TOK_IDENT ';'           { $$ = adopt2 (func_astree(TOK_INITDECL, $1), $1, $2);}
+            | basetype TOK_ARRAY TOK_IDENT ';' { $$ = adopt3 (func_astree(TOK_INITDECL, $1), $1, $2, $3);}
+            ;
+
+
+identdecl   : basetype TOK_IDENT            { $$ = adopt2 (func_astree(TOK_DECLID, $1), $1, $2);}
+            | basetype TOK_ARRAY TOK_IDENT  { $$ = adopt3 (func_astree(TOK_DECLID, $1), $1, $2, $3);}
             ;
 
 block       : blockhead '}'          { freeast($2); $$=$1;}
@@ -128,6 +132,7 @@ blockhead   : blockhead statement    { $$=adopt1($1,$2);}
 
 statement   : block                  { $$=$1;}
             | vardecl                { $$=$1;}
+            | identdecl              { $$=$1; }
             | while                  { $$=$1;}
             | ifelse                 { $$=$1;}
             | return                 { $$=$1;}
@@ -135,9 +140,12 @@ statement   : block                  { $$=$1;}
             ;
 
 vardecl     : basetype TOK_IDENT '=' expr ';' { 
-  $$ = adopt3(func_astree(TOK_VARDECL, $1), $1,$2,$4);
+              $$ = adopt3(func_astree(TOK_VARDECL, $1), $1,$2,$4);
 	      freeast($3);
                                        freeast($4);}
+            | basetype TOK_ARRAY TOK_IDENT '=' expr ';' { 
+	      $$ = adopt3(adopt1(func_astree(TOK_VARDECL, $1), $2), $1,$3,$5);
+	      freeast($4);}
             ;
 
 while       : TOK_WHILE '(' expr ')' statement

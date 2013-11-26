@@ -62,10 +62,35 @@ void SymbolTable::switchOnTok(astree node)
 	}
       }
       break;
+    case TOK_DECLID:
+      {
+	string type = "";
+	if(node->first->next->symbol == TOK_ARRAY){
+	  type = *(node->first->first->lexinfo);
+	}
+	else 
+	  type = *(node->first->first->lexinfo);
+	string name = *(node->last->lexinfo);
+	this->addSymbol(name, this->attrsFromNode(type, node));
+	break;
+      }
     case TOK_VARDECL:
       {
-	string type = *(node->first->first->lexinfo);
-	string name = *(node->first->next->lexinfo);
+	string type = "";
+	string name = "";
+	if(node->first->symbol == TOK_ARRAY){
+	  type = *(node->first->next->first->lexinfo)+"[]";
+	  name = *(node->first->next->next->lexinfo);
+	}
+	else if(node->first->symbol == TOK_BASETYPE){
+	  type = *(node->first->first->lexinfo);
+	  name = *(node->first->next->lexinfo);	  
+	}
+	else { //is a TOK_TYPEID
+	  type = *(node->first->lexinfo);
+	  name = *(node->first->next->lexinfo);
+	}
+
 	this->addSymbol(name, this->attrsFromNode(type, node));
 	//Type check the expr to the right later
 	break;
@@ -74,12 +99,12 @@ void SymbolTable::switchOnTok(astree node)
       {
 	astree arg = node->first->next->first;
 
-	string type = *(node->first->first->lexinfo) + "(";
+	string type = *(node->first->first->first->lexinfo) + "(";
 	bool first = true;
 	while (arg) {
 	  if(!first) type += ", ";
 	  first = false; 
-	  type += *(arg->first->lexinfo);
+	  type += *(arg->first->first->lexinfo);
 	  arg = arg->next;
 	}
 	type += ")";
@@ -94,13 +119,29 @@ void SymbolTable::switchOnTok(astree node)
 	  
 	while (arg) {
 	  block->addSymbol(*(arg->last->lexinfo), 
-			   block->attrsFromNode(*(arg->first->lexinfo), arg));
+			   block->attrsFromNode(*(arg->first->first->lexinfo), arg));
 	  arg = arg->next;
 	}
 	  
 	block->populateTable(node->last); //populates next symbol table
       }
       break;
+    case TOK_STRUCT:
+      {
+	string structName = *(node->first->lexinfo);
+	this->addSymbol(structName, this->attrsFromNode("struct", node));
+	astree field = node->first->first;
+	while(field != NULL){
+	  string type = *(field->first->lexinfo);
+	  if(field->symbol == TOK_ARRAY){
+	    type = *(field->first->first->lexinfo)+"[]";
+	  }
+	  this->addSymbol(structName + "." + *(field->last->lexinfo)
+			  , this->attrsFromNode(type, field));
+	  field = field->next;
+	}
+	break;
+      }
     case TOK_PROTOTYPE:
       {
 	//printf("No symbol table case for TOK_PROTOTYPE\n`");

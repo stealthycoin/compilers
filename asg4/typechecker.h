@@ -11,10 +11,8 @@ using namespace std;
 static map<int, string> PRIMATIVE_MAP = {
 {TOK_INTCON, "int"}, 
 {TOK_CHARCON, "char"}, 
-{TOK_STRINGCON, "string"},
 {TOK_INT, "int"},
 {TOK_CHAR, "char"}, 
-{TOK_STRING, "string"},
 {TOK_BOOL, "bool"},
 {TOK_FALSE, "bool"},
 {TOK_TRUE, "bool"}};
