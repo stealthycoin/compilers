@@ -1,98 +1,119 @@
 program
   prototype
-    basetype
-      void
-      TOK_DECLID (__assert_fail)
+    TOK_DECLID ()
+      basetype
+        void
+      TOK_IDENT (__assert_fail)
     TOK_PARAMLIST (()
+      TOK_DECLID ()
+        basetype
+          TOK_STRING (string)
+        TOK_IDENT (expr)
+      TOK_DECLID ()
+        basetype
+          TOK_STRING (string)
+        TOK_IDENT (file)
+      TOK_DECLID ()
+        basetype
+          TOK_INT (int)
+        TOK_IDENT (line)
+    ';' (;)
+  prototype
+    TOK_DECLID ()
       basetype
-        TOK_STRING (string)
-        TOK_DECLID (expr)
+        void
+      TOK_IDENT (putb)
+    TOK_PARAMLIST (()
+      TOK_DECLID ()
+        basetype
+          TOK_BOOL (bool)
+        TOK_IDENT (b)
+    ';' (;)
+  prototype
+    TOK_DECLID ()
       basetype
-        TOK_STRING (string)
-        TOK_DECLID (file)
+        void
+      TOK_IDENT (putc)
+    TOK_PARAMLIST (()
+      TOK_DECLID ()
+        basetype
+          TOK_CHAR (char)
+        TOK_IDENT (c)
+    ';' (;)
+  prototype
+    TOK_DECLID ()
+      basetype
+        void
+      TOK_IDENT (puti)
+    TOK_PARAMLIST (()
+      TOK_DECLID ()
+        basetype
+          TOK_INT (int)
+        TOK_IDENT (i)
+    ';' (;)
+  prototype
+    TOK_DECLID ()
+      basetype
+        void
+      TOK_IDENT (puts)
+    TOK_PARAMLIST (()
+      TOK_DECLID ()
+        basetype
+          TOK_STRING (string)
+        TOK_IDENT (s)
+    ';' (;)
+  prototype
+    TOK_DECLID ()
+      basetype
+        void
+      TOK_IDENT (endl)
+    ';' (;)
+  prototype
+    TOK_DECLID ()
       basetype
         TOK_INT (int)
-        TOK_DECLID (line)
+      TOK_IDENT (getc)
     ';' (;)
   prototype
-    basetype
-      void
-      TOK_DECLID (putb)
-    TOK_PARAMLIST (()
-      basetype
-        TOK_BOOL (bool)
-        TOK_DECLID (b)
-    ';' (;)
-  prototype
-    basetype
-      void
-      TOK_DECLID (putc)
-    TOK_PARAMLIST (()
-      basetype
-        TOK_CHAR (char)
-        TOK_DECLID (c)
-    ';' (;)
-  prototype
-    basetype
-      void
-      TOK_DECLID (puti)
-    TOK_PARAMLIST (()
-      basetype
-        TOK_INT (int)
-        TOK_DECLID (i)
-    ';' (;)
-  prototype
-    basetype
-      void
-      TOK_DECLID (puts)
-    TOK_PARAMLIST (()
+    TOK_DECLID ()
       basetype
         TOK_STRING (string)
-        TOK_DECLID (s)
+      TOK_IDENT (getw)
     ';' (;)
   prototype
-    basetype
-      void
-      TOK_DECLID (endl)
-    ';' (;)
-  prototype
-    basetype
-      TOK_INT (int)
-      TOK_DECLID (getc)
-    ';' (;)
-  prototype
-    basetype
-      TOK_STRING (string)
-      TOK_DECLID (getw)
-    ';' (;)
-  prototype
-    basetype
-      TOK_STRING (string)
-      TOK_DECLID (getln)
-    ';' (;)
-  prototype
-    array
+    TOK_DECLID ()
       basetype
         TOK_STRING (string)
-      TOK_DECLID (getargv)
+      TOK_IDENT (getln)
     ';' (;)
   prototype
-    basetype
-      void
-      TOK_DECLID (exit)
-    TOK_PARAMLIST (()
+    TOK_DECLID ()
       basetype
-        TOK_INT (int)
-        TOK_DECLID (status)
+        TOK_STRING (string)
+      array
+      TOK_IDENT (getargv)
+    ';' (;)
+  prototype
+    TOK_DECLID ()
+      basetype
+        void
+      TOK_IDENT (exit)
+    TOK_PARAMLIST (()
+      TOK_DECLID ()
+        basetype
+          TOK_INT (int)
+        TOK_IDENT (status)
     ';' (;)
   TOK_FUNCTION ()
-    basetype
-      TOK_INT (int)
-      TOK_DECLID (fac)
-    TOK_PARAMLIST (()
+    TOK_DECLID ()
       basetype
         TOK_INT (int)
-        TOK_DECLID (n)
+      TOK_IDENT (fac)
+    TOK_PARAMLIST (()
+      TOK_DECLID ()
+        basetype
+          TOK_INT (int)
+        TOK_IDENT (n)
     block
       vardecl
         basetype

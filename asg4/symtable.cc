@@ -95,6 +95,29 @@ void SymbolTable::switchOnTok(astree node)
 	//Type check the expr to the right later
 	break;
       }           
+
+    case TOK_PROTOTYPE:
+      {
+
+	string name = *(node->first->first->next->lexinfo);
+	string type = *(node->first->first->first->lexinfo);
+
+       
+	string argType = "";
+	bool first = true;
+	astree plist = node->first->next->first;
+	while(plist != NULL){
+	  if(first != true){ argType += ", "; }
+	  first = false; 
+	  argType += *(plist->first->first->lexinfo);
+	  plist = plist->next; 
+	}
+
+	type = type + "(" + argType + ")";
+
+	this->addSymbol(name,this->attrsFromNode(type, node));
+      }
+      break;
     case TOK_FUNCTION:
       {
 	astree arg = node->first->next->first;
@@ -142,11 +165,6 @@ void SymbolTable::switchOnTok(astree node)
 	}
 	break;
       }
-    case TOK_PROTOTYPE:
-      {
-	//printf("No symbol table case for TOK_PROTOTYPE\n`");
-      }
-      break;
     case TOK_IF:
       {
 	this->enterBlock()->populateTable(node->last); //if block

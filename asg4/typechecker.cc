@@ -1,6 +1,7 @@
 #include "typechecker.h"
 #include "yyparse.h"
 #include "auxlib.h"
+#include <cmath>
 #include <cstdlib>
 
 void show_error(string message, astree bad_token) {
@@ -62,8 +63,11 @@ string expr_type(astree expression){
       return *(expression->first->first->lexinfo)+"[]";
       break;
     case TOK_CALL:
-      return expression->scope->lookup(*(expression->first->lexinfo));
-
+      {
+	string type = expression->scope->lookup(*(expression->first->lexinfo));
+	return type.substr(0, type.find("("));
+      }
+      break;
     case TOK_BINOP:
       {
 	string leftType = expr_type(expression->first);
@@ -144,6 +148,9 @@ void assert_expr_type(string type, astree expression) {
 	string fn = *(expression->first->lexinfo);
 	string t = expression->scope->lookup(*(expression->first->lexinfo));
 
+	if (t == "") {
+	  break; //didn't find function in symbol table WTF MATE??
+	}
 	if (type != t.substr(0, type.length()))
 	  show_error("Function returns type "+t.substr(0, t.find("("))
 		     +", expected "+type, expression);
@@ -161,8 +168,8 @@ void assert_expr_type(string type, astree expression) {
 	string foundType = t.substr(0, t.find("(")) + "(" + argType + ")";
 	if(t != foundType)
 	  show_error("Wrong argument types given to function "+fn
-		     +"."+"\n\tGiven "+foundType.substr(foundType.find("("))
-		     +"\n\tExpected "+t.substr(t.find("(")), expression);
+		     +"."+"\n\tGiven "+foundType
+		     +"\n\tExpected "+t, expression);
 	break;
       }
     case TOK_BINOP:
@@ -170,7 +177,6 @@ void assert_expr_type(string type, astree expression) {
 	string op = *(expression->first->next->lexinfo);
 
 	if(op == "+" || op == "-" || op == "/" || op == "*" || op =="%") {
-	  printf("Arithmetical operator\n");
 	  if(expr_type(expression->first) != "int" 
 	     || expr_type(expression->last) != "int")
 	    show_error("Arithmetical operators can only accept int arguments", expression);
