@@ -17,7 +17,6 @@
 #include "lyutils.h"
 #include "symtable.h"
 #include "typechecker.h"
-#include "codegen.h"
 
 string dOption= "";
 string yyin_cpp_command = "";
@@ -74,6 +73,7 @@ void write_files(char *filename) {
     globalTable->dump(symFile, 0);
     fclose(symFile);
 
+
 }
 
 void scan_opts (int argc, char **argv) {
@@ -109,11 +109,7 @@ int main(int argc, char **argv) {
    write_files( argv[1] );
    yyin_cpp_pclose();
 
-   typecheck(yyparse_astree);
+   typecheck_block(yyparse_astree);
 
-   
-   if(get_exitstatus() != EXIT_FAILURE){
-     codegen(string(argv[1])+".oil", yyparse_astree);
-   }
    return get_exitstatus();
 }
