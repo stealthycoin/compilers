@@ -29,10 +29,6 @@ struct astree_rep {
   SymbolTable* scope;      // Pointer to the scope this token is a part of
 };
 
-
-
-
-
 bool is_astree (void *object);
 astree new_astree (int symbol, int filenr, int linenr, int offset,
                    const char *lexinfo);

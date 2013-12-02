@@ -1,4 +1,4 @@
-#indef _CODEGEN_H_
+#ifndef _CODEGEN_H_
 #define _CODEGEN_H_
 
 #include "astree.h"
@@ -10,10 +10,6 @@ typedef struct codegenParams {
   SymbolTable symTable;
 } codegenParams; 
 
-void codegen(string filename, astree t, SymbolTable symTable);
-
-
-
-
+void codegen(string filename, astree t);
 
 #endif
