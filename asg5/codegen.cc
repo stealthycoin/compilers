@@ -1,8 +1,12 @@
 #include "codegen.h"
 
-//Foo meow meow meow meow meow meow
+
+void switchOnToken(astree token) {
+
+}
+
 void codegen(string filename, astree t, SymbolTable symTable){
-
-
-
+  
+  switchOnToken(t);
+  
 }
