@@ -1,6 +1,6 @@
 //This assignment completed with pair programming
 // Name: John Carlyle Username: jcarlyle@ucsc.edu
-// Name: Morgan McDermott Username: moamcderxf@ucsc.edu
+// Name: Morgan McDermott Username: moamcder@ucsc.edu
 
 #include <assert.h>
 #include <inttypes.h>
@@ -60,22 +60,23 @@ astree new_astree (int symbol, int filenr, int linenr, int offset,
 
 
 astree adopt (astree root, ...) {
-   va_list children;
-   assert (is_astree (root));
-   va_start (children, root);
-   for(;;) {
-      astree child = va_arg (children, astree);
-      if (child == NULL) break;
-      assert (is_astree (child));
-      if (root->last == NULL) root->first = child;
-                         else root->last->next = child;
-      root->last = child;
-      DEBUGF ('a', "%p (%s) adopting %p (%s)\n",
-              root, root->lexinfo,
-              child, child->lexinfo);
-   }
-   va_end (children);
-   return root;
+  va_list children;
+  assert (is_astree (root));
+  va_start (children, root);
+  for(;;) {
+    
+    astree child = va_arg (children, astree);
+    if (child == NULL) break;
+    assert (is_astree (child));
+    if (root->last == NULL) root->first = child;
+    else root->last->next = child;
+    root->last = child;
+    DEBUGF ('a', "%p (%s) adopting %p (%s)\n",
+	    root, root->lexinfo,
+	    child, child->lexinfo);
+  }
+  va_end (children);
+  return root;
 }
 
 astree adopt3(astree root, astree child1, astree child2, astree child3){
@@ -132,7 +133,7 @@ static void dump_node (FILE *outfile, astree node, int depth) {
    /*fprintf (outfile, "%s \"%s\" ",get_yytname (node->symbol),
      node->lexinfo->c_str());*/
 
-     string out = "";
+       string out = "";
        switch(node->symbol){
        case TOK_ROOT: out = "program"; break;
        case TOK_VOID: out = "void"; break;
@@ -160,7 +161,7 @@ static void dump_astree_rec (FILE *outfile, astree root, int depth) {
    dump_node (outfile, root, depth);
    fprintf (outfile, "\n");
    for (child = root->first; child != NULL; child = child->next) {
-      dump_astree_rec (outfile, child, depth + 1);
+     dump_astree_rec (outfile, child, depth + 1);
    }
 }
 
@@ -182,20 +183,20 @@ void yyprint (FILE *outfile, unsigned short toknum, astree yyvaluep) {
 
 void freeast (astree root) {
   return;
-   astree child = NULL;
-   if (root == NULL) return;
-   assert (is_astree (root));
-   for (child = root->first; child != NULL;) {
-      astree asttofree = child;
-      assert (is_astree (asttofree));
-      child = child->next;
-      freeast (asttofree);
-   }
-   DEBUGF ('f', "free [%X]-> %d:%d.%d: %s: %p->\"%s\")\n",
-           (uintptr_t) root, root->filenr, root->linenr, root->offset,
-            get_yytname (root->symbol), root->lexinfo, root->lexinfo);
-   //free (root->lexinfo);
-   memset (root, 0, sizeof (struct astree_rep));
+  astree child = NULL;
+  if (root == NULL) return;
+  assert (is_astree (root));
+  for (child = root->first; child != NULL;) {
+    astree asttofree = child;
+    assert (is_astree (asttofree));
+    child = child->next;
+    freeast (asttofree);
+  }
+  DEBUGF ('f', "free [%X]-> %d:%d.%d: %s: %p->\"%s\")\n",
+	  (uintptr_t) root, root->filenr, root->linenr, root->offset,
+	  get_yytname (root->symbol), root->lexinfo, root->lexinfo);
+  //free (root->lexinfo);
+  memset (root, 0, sizeof (struct astree_rep));
    free (root);
 }
 
