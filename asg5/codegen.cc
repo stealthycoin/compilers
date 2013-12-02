@@ -10,7 +10,7 @@ void switchOnToken(astree token) {
 
 
 void codegen(string filename, astree t){  
-  FILE *oilFile = fopen(filename, "w");
+  FILE *oilFile = fopen(filename.c_str(), "w");
 
   switchOnToken(t);
   
