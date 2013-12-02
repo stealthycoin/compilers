@@ -17,143 +17,162 @@ int extractPrimSymbol(astree t){
   return prim->symbol;
 }
 
+
+bool isTypePrimative(string t){
+  return (t == "char" || t == "bool" || t == "int");
+}
+
 bool isPrimative(astree t){
-  bool z = (PRIMATIVE_MAP.find(extractPrimSymbol(t)) != PRIMATIVE_MAP.end());
-  return z;
+  if(extractPrimSymbol(t) == TOK_NULL) return false;
+  if(extractPrimSymbol(t) == TOK_STRINGCON) return false; 
+  return (PRIMATIVE_MAP.find(extractPrimSymbol(t)) != PRIMATIVE_MAP.end());
 }
 
 bool isPrimativeRep(astree t){
   if(t->symbol == TOK_VARIABLE){
     string varname = *(t->first->lexinfo);
     string ty = t->scope->lookup(varname);
-    return (ty == "char" || ty == "bool" || ty == "int");
+    return isTypePrimative(ty); 
   }
   else return isPrimative(t);
 }
-void assert_expr_type(string type, astree expression);
-string expr_type(astree expression){
-  if (expression->scope == NULL)
-    show_error("Does not have scope.", expression);
-  if(isPrimative(expression))
-    return PRIMATIVE_MAP[extractPrimSymbol(expression)];
-  else {
-    switch (expression->symbol) {
-    case TOK_POS:
-      assert_expr_type("int", expression->first);
-      return "int";
-      break;
-    case TOK_NEG:
-      assert_expr_type("int", expression->first);
-      return "int";
-      break;
-    case '!': 
-      assert_expr_type("bool", expression->first);
-      return "bool"; break;
-    case TOK_ORD: 
-      assert_expr_type("char", expression->first);
-      return "int"; break;
-    case TOK_CHR: 
-      assert_expr_type("int", expression->first);
-      return "char"; break;
-	break;
-    case TOK_NEW:
-      return *(expression->first->lexinfo);
-      break;
-    case TOK_NEWARRAY:
-      return *(expression->first->first->lexinfo)+"[]";
-      break;
-    case TOK_CALL:
-      {
-	string type = expression->scope->lookup(*(expression->first->lexinfo));
-	return type.substr(0, type.find("("));
-      }
-      break;
-    case TOK_BINOP:
-      {
-	string leftType = expr_type(expression->first);
-	string rightType = expr_type(expression->last);
-	if(leftType != rightType)
-	  show_error("Expression of type "+rightType+" found, expected "+leftType, expression->last);
-	string op = *(expression->first->next->lexinfo);
-	if(op == "==" || op == "!=" || op == "<=" || op == ">=" || op == "<" || op == ">")
-	  return "bool";
-	return leftType;
-	break;
-      }
-    case TOK_CONSTANT:
-      {
-	string s = PRIMATIVE_MAP[extractPrimSymbol(expression)];
-	if(s == ""){
-	  if(expression->first->symbol == TOK_NULL) return "null";
-	  else {
-	    show_error("Unknown constant", expression);
-	  }
-	}
-	return s;
-	break;
-      }
-    case TOK_VARIABLE:
-      {
-	string t = expression->scope->lookup(*(expression->first->lexinfo));
-	return t;
-	break;
-      }
-    default:
-      printf("\t No case in expr_type for node type: %d\n", expression->symbol);
-      return "";
-    }
-  }
+void assert_expr_type(string context, string type, astree expression);
+
+
+// string expr_type(astree expression){
+//   if (expression->scope == NULL)
+//     show_error("Does not have scope.", expression);
+//   if(isPrimative(expression))
+//     return PRIMATIVE_MAP[extractPrimSymbol(expression)];
+//   else {
+//     switch (expression->symbol) {
+//     case TOK_POS:
+//       assert_expr_type("int", expression->first);
+//       return "int";
+//       break;
+//     case TOK_NEG:
+//       assert_expr_type("int", expression->first);
+//       return "int";
+//       break;
+//     case '!': 
+//       assert_expr_type("bool", expression->first);
+//       return "bool"; break;
+//     case TOK_ORD: 
+//       assert_expr_type("char", expression->first);
+//       return "int"; break;
+//     case TOK_CHR: 
+//       assert_expr_type("int", expression->first);
+//       return "char"; break;
+// 	break;
+//     case TOK_NEW:
+//       return *(expression->first->lexinfo);
+//       break;
+//     case TOK_NEWARRAY:
+//       return *(expression->first->first->lexinfo)+"[]";
+//       break;
+//     case TOK_CALL:
+//       {
+// 	string type = expression->scope->lookup(*(expression->first->lexinfo));
+// 	return type.substr(0, type.find("("));
+//       }
+//       break;
+//     case TOK_BINOP:
+//       {
+// 	string leftType = expr_type(expression->first);
+// 	string rightType = expr_type(expression->last);
+// 	if(leftType != rightType)
+// 	  show_error("Expression of type "+rightType+" found, expected "+leftType, expression->last);
+// 	string op = *(expression->first->next->lexinfo);
+// 	if(op == "==" || op == "!=" || op == "<=" || op == ">=" || op == "<" || op == ">")
+// 	  return "bool";
+// 	return leftType;
+// 	break;
+//       }
+//     case TOK_CONSTANT:
+//       {
+// 	string s = PRIMATIVE_MAP[extractPrimSymbol(expression)];
+// 	if(s == ""){
+// 	  if(expression->first->symbol == TOK_NULL) return "null";
+// 	  else {
+// 	    show_error("Unknown constant", expression);
+// 	  }
+// 	}
+// 	return s;
+// 	break;
+//       }
+//     case TOK_VARIABLE:
+//       {
+// 	string t = expression->scope->lookup(*(expression->first->lexinfo));
+// 	return t;
+// 	break;
+//       }
+//     case '.':
+//       {
+// 	string name = expression->scope->lookup(*(expression->first->first->lexinfo)) + "." + *(expression->last->lexinfo);
+// 	string t = expression->scope->lookup(name);
+// 	return t;
+// 	break;
+//       }
+//     default:
+//       printf("\t No case in expr_type for node type: %c\n", (char)expression->symbol);
+//       return "";
+//     }
+//   }
+// }
+
+void breakpoint() {}
+
+string typecheck_expr(astree expression);
+
+void assert_expr_type(string context, string type, astree expression){
+  string t = typecheck_expr(expression);
+  if(t != type) show_error("In "+context+", found type "+t+", expected "+type, expression);
 }
 
-void assert_expr_type(string type, astree expression) {
+string typecheck_expr(astree expression) {
   if (expression->scope == NULL) {
     show_error("Does not have scope.", expression);
   }
   
   if(isPrimative(expression)){
-    string t = PRIMATIVE_MAP[extractPrimSymbol(expression)];
-    if (type != t)
-      show_error("Primative is of type: " + t + ", expected "+type, expression);
-  } 
+    return PRIMATIVE_MAP[extractPrimSymbol(expression)];
+  }
   else {
     switch (expression->symbol) {
     case TOK_POS:
-      if(type != "int") show_error("Can only ?posify? integers", expression);
-      assert_expr_type("int", expression->first);
-      break;
+      assert_expr_type("+", "int", expression->first);
+      return "int"; break;
     case TOK_NEG:
-      if(type != "int") show_error("Can only negate integers", expression);
-      assert_expr_type("int", expression->first);
-      break;
+      assert_expr_type("-", "int", expression->first);
+      return "int"; break;
     case '!': 
-      if(type != "bool"){ show_error("! operator always yields a bool", expression); }
-      assert_expr_type("bool", expression->first);
-      break;
+      assert_expr_type("!", "bool", expression->first);
+      return "bool"; break;
     case TOK_ORD: 
-      if(type != "int"){ show_error("Ord converts a char to an int.", expression); }
-      assert_expr_type("char", expression->first);
-      break;
+      assert_expr_type("ord", "char", expression->first);
+      return "int"; break;
     case TOK_CHR: 
-      if(type != "char"){ show_error("Ord converts an int to a char.", expression); }
-      assert_expr_type("int", expression->first);
+      assert_expr_type("chr", "int", expression->first);
+      return "char"; break;
     case TOK_NEW:
-      
-      if(type != *(expression->first->lexinfo))
-	show_error("Expected type "+type+", got a new "
-		   + *(expression->first->lexinfo), expression);
-      break;
+      return *(expression->first->lexinfo); break;
+    case TOK_NEWARRAY:
+      return *(expression->first->first->lexinfo)+"[]"; break;
+    case TOK_NULL: return "null"; break;
+    case TOK_INDEX:
+      {
+	string varname = *(expression->first->first->lexinfo);
+	string type = expression->scope->lookup(varname);
+	if(type == "string"){  return "char"; }
+	else return type.substr(0, type.find("["));
+	break;
+      }
     case TOK_CALL:
       {
-	
 	string fn = *(expression->first->lexinfo);
 	string t = expression->scope->lookup(*(expression->first->lexinfo));
 
-	if (t == "") {
-	  break; //didn't find function in symbol table WTF MATE??
-	}
-	if (type != t.substr(0, type.length()))
-	  show_error("Function returns type "+t.substr(0, t.find("("))
-		     +", expected "+type, expression);
+	if (t == "") {  show_error("Function "+fn+" has empty type.", expression); break; 	}
 
 	string argType = "";
 	bool first = true;
@@ -161,7 +180,7 @@ void assert_expr_type(string type, astree expression) {
 	while(plist != NULL){
 	  if(first != true){ argType += ", "; }
 	  first = false; 
-	  argType += expr_type(plist);
+	  argType += typecheck_expr(plist);
 	  plist = plist->next; 
 	}
 	
@@ -170,202 +189,245 @@ void assert_expr_type(string type, astree expression) {
 	  show_error("Wrong argument types given to function "+fn
 		     +"."+"\n\tGiven "+foundType
 		     +"\n\tExpected "+t, expression);
+
+	return t.substr(0, t.find("("));
 	break;
       }
     case TOK_BINOP:
       {
 	string op = *(expression->first->next->lexinfo);
-
 	if(op == "+" || op == "-" || op == "/" || op == "*" || op =="%") {
-	  if(expr_type(expression->first) != "int" 
-	     || expr_type(expression->last) != "int")
+	  if(typecheck_expr(expression->first) != "int" 
+	     || typecheck_expr(expression->last) != "int")
 	    show_error("Arithmetical operators can only accept int arguments", expression);
+	  return "int";
 	}
 	if(op == "==" || op == "!=" || op == "<=" || op == ">=" || op == "<" || op == ">"){
-	  if(type != "bool"){ show_error("Operator "+op+" returns a bool, expected "+type, expression); }
-	  else {
-	    if((op == "<=" || op == ">=" || op == "<" || op == ">") && \
-	       (!isPrimativeRep(expression->first) || !isPrimativeRep(expression->last))){
-	      show_error("Operator "+op+" only compares primitive values", expression);
-	      string leftType = expr_type(expression->first);
-	      string rightType = expr_type(expression->last);
-	      if(leftType != rightType)
-		show_error("Operator "+op+" RHS "+rightType+" found, expected "+leftType, expression->last);
+	  string leftType = typecheck_expr(expression->first);
+	  string rightType = typecheck_expr(expression->last);
+	  if((op == "<=" || op == ">=" || op == "<" || op == ">") && \
+	     (!isTypePrimative(typecheck_expr(expression->first)) || !isTypePrimative(typecheck_expr(expression->last)))){
+	    show_error("Operator "+op+" only compares primitive values", expression);
+	    if(leftType != rightType)
+	      show_error("2Operator "+op+" RHS "+rightType+" found, expected "+leftType, expression->last);
+	  }
+	  if(op == "==" || op == "!="){
+	    if((isPrimativeRep(expression->first) || isPrimativeRep(expression->last))
+	       && leftType != rightType && leftType != "null" && rightType !="null"){
+	      show_error("3Operator "+op+" RHS "+rightType
+			 +" found, expected "+leftType, expression->last);
 	    }
-
-	    if(op == "==" || op == "!="){
-	      string leftType = expr_type(expression->first);
-	      string rightType = expr_type(expression->last);
-	      if((isPrimativeRep(expression->first) || isPrimativeRep(expression->last))
-		 && leftType != rightType && leftType != "null" && rightType !="null"){
-		  show_error("Operator "+op+" RHS "+rightType
-			     +" found, expected "+leftType, expression->last);
-	      }
-	      else if(leftType != rightType 
-		      && leftType != "null" && rightType != "null"){
-		show_error("Operator "+op+" RHS "+rightType
-			   +" found, expected "+leftType, expression->last);		
-	      }
-	      
+	    else if(leftType != rightType 
+		    && leftType != "null" && rightType != "null"){
+	      show_error("4Operator "+op+" RHS "+rightType
+			 +" found, expected "+leftType, expression->last);		
 	    }
 	  }
+	  return "bool"; //comparison operators
 	}
+	show_error("Unknown binary operator "+op, expression);
+	return "UnknownBinopType";
 	break;
       }
     case TOK_CONSTANT:
       {
 	string t = PRIMATIVE_MAP[expression->first->symbol];
-	if (type != t) show_error("Constant is of type: " + t + ", expected "+type, expression);
+	if(expression->first->symbol == TOK_NULL){ return "null"; }
+	if(t == ""){
+	  if(expression->first->symbol == TOK_STRINGCON) return "string";
+	  show_error("Unknown constant", expression->first);
+	}
+	return t; 
 	break;
       }
     case TOK_VARIABLE:
       {      
 	string varname = *(expression->first->lexinfo);
 	string t = expression->scope->lookup(varname);
-	if(t != type)
-	  show_error("Variable "+varname+" is of type "+t+", expected "+type, expression);
+	if(t == ""){
+	  if(expression->first->symbol == TOK_NULL) return "null";
+	  else  show_error("Unknown variable "+varname, expression);
+	}
+	return t;
 	break;
       }
-    }
-  }
-}
-
-
-
-void typecheck(astree tree) {  
-  astree node = tree->first;
-  while (node != NULL) {
-    switch (node->symbol) {
-    case TOK_STRUCT: break;
-    case TOK_DECLID: break;
-    case ';': break; 
-    case TOK_CALL:
+    case TOK_IDENT:
       {
-	//We just need to type check the arguments for a 
-	// statement-level function call. 
-	string ret = node->scope->lookup(*(node->first->lexinfo));
-	assert_expr_type(ret, node);
+      	string varname = *(expression->lexinfo);
+	string t = expression->scope->lookup(varname);
+	if(t == ""){
+	  show_error("Unknown tok_ident", expression);
+	}
+	return t;
 	break;
       }
-    case TOK_VARDECL:
+    case '.':
       {
-	string leftType = "";
-	string varname = "";
-	if(node->first->symbol == TOK_ARRAY){
-	  leftType = *(node->first->next->first->lexinfo)+"[]";
-	  varname = *(node->first->next->next->lexinfo);	  
-	}
-	else if(node->first->symbol == TOK_BASETYPE){
-	  leftType = *(node->first->first->lexinfo);
-	  varname = *(node->first->next->lexinfo);	  
-	}
-	else { //is a TOK_TYPEID
-	  leftType = *(node->first->lexinfo);
-	  varname = *(node->first->next->lexinfo);
-	}
-	
-	assert_expr_type(leftType, node->last);
-      }
-      break;
-    case TOK_WHILE:
-      assert_expr_type("bool", node->first);
-      typecheck(node->last);
-      break;
-    case TOK_IF:
-      assert_expr_type("bool", node->first);
-      typecheck(node->last);
-      break;
-    case TOK_IFELSE:
-      {
-	assert_expr_type("bool", node->first);
-	astree temp = node->first->next;
-	while(temp != NULL){
-	  if(temp->symbol == TOK_IF){
-	    assert_expr_type("bool", temp->first);
-	    typecheck(temp->last);
-	  }
-	  else typecheck(temp);
-	  temp = temp->next;
-	}
-	break;
-      }
-    case TOK_BINOP:
-      {
-	string op = *(node->first->next->lexinfo);
-	if(op != "=") show_error("Assignment (=) is the only binary operator that forms a statement, you gave me a silly ("+op+") :S", node);
-	else {
-	  if(node->first->symbol != TOK_VARIABLE
-	     && node->first->symbol != TOK_INDEX
-	     && node->first->symbol != '.')
-	    show_error("You can only assign values to variables", node->first);
-	  else {
-	    
-	    string varname = *(node->first->first->lexinfo);
-	    string leftType = "";
-	    if(node->first->symbol == '.'){
-	      varname = node->scope->lookup(*(node->first->first->first->lexinfo))
-		+ "." + *(node->first->last->lexinfo);
-	      leftType = node->scope->lookup(varname);	    
-	    }
-	    else if(node->first->symbol == TOK_INDEX){
-	      varname = *(node->first->first->first->lexinfo);
-	      string t = node->scope->lookup(varname);
-	      leftType = t.substr(0, t.find("["));
-	      
-	      if(leftType == "string"){ leftType = "char"; }
-	      
-	      if(expr_type(node->first->last->first) != "int"){
-		show_error("You can only index into arrays and strings with integers", node->first->last->first);
-	      }
-	    }
-	    else {
-	      leftType = node->scope->lookup(varname); 
-	    }
-
-	    assert_expr_type(leftType, node->last);
-	    /*string rightType = expr_type(node->last);
-	    if(leftType != rightType)
-	    show_error("Attempted to assign "+rightType+" to "+varname+", expected "+leftType, node->first);*/
-	  }
-	}
-      break;
-      }
-    case TOK_RETURNVOID:
-      {
-	string funType = node->scope->parentFunction(NULL);
-	string retType = funType.substr(0, funType.find("("));
-	if(retType != "void"){
-	  show_error("Got a return type void, expected "
-		     +funType.substr(0, funType.find("(")), node);
-	}
-	break;
-      }
-    case TOK_RETURN:
-      {
-	string funType = node->scope->parentFunction(NULL);
-	string retType = funType.substr(0, funType.find("("));
-	string realRetType = expr_type(node->first);
-	if(retType != realRetType)
-	  show_error("Attempted to return type "+realRetType
-		     +", expected "+retType
-		     , node);
-	break;
-      }
-    case TOK_FUNCTION: 
-      {
-	typecheck(node->last);
-	break;
-      }
-    case TOK_PROTOTYPE:
-      {
+	string name = expression->scope->lookup(*(expression->first->first->lexinfo)) + "." + *(expression->last->lexinfo);
+	string t = expression->scope->lookup(name);
+	return t;
 	break;
       }
     default:
-      printf("\t No case in typecheck for node type: %d\n", node->symbol);
-      break;
+      breakpoint();
+      printf("\t No case in typecheck_expr for node type: %c\n", (char)expression->symbol);
+      return "";
     }
-
-  node = node->next;
+    show_error("Error: Reached end of switch in typechecker", expression);
   }
+  show_error("Error: Reached end of control in typechecker", expression);
+  return "";
 }
 
+
+void typecheck_if(astree node){
+  assert_expr_type("if statement", "bool", node->first);
+  if(node->last->symbol == 291)
+    typecheck_block(node->last);
+  else 
+    typecheck_stmt(node->last);
+}
+
+void typecheck_ifelse(astree node){
+  assert_expr_type("if-else statement", "bool", node->first);
+  astree temp = node->first->next;
+  while(temp != NULL){
+    if(temp->symbol == TOK_IF) typecheck_if(temp);
+    else if(temp->symbol == TOK_IFELSE) typecheck_ifelse(temp);
+    else { typecheck_stmt(temp); }
+    temp = temp->next;
+  }
+}	
+
+
+
+
+void typecheck_stmt(astree node){
+  if(node->symbol == TOK_BLOCK){ typecheck_block(node); return; }
+  switch (node->symbol) {
+  case TOK_STRUCT: break;
+  case TOK_DECLID: break;
+  case ';': break; 
+  case TOK_CALL:
+    {
+      //We don't care about the return type for a statement-level function call
+      typecheck_expr(node);
+      break;
+    }
+  case TOK_VARDECL:
+    {
+      string leftType = "";
+      string varname = "";
+      if(node->first->symbol == TOK_ARRAY){
+	leftType = *(node->first->next->first->lexinfo)+"[]";
+	varname = *(node->first->next->next->lexinfo);	  
+      }
+      else if(node->first->symbol == TOK_BASETYPE){
+	leftType = *(node->first->first->lexinfo);
+	varname = *(node->first->next->lexinfo);	  
+      }
+      else { //is a TOK_TYPEID
+	leftType = *(node->first->lexinfo);
+	varname = *(node->first->next->lexinfo);
+      }
+      assert_expr_type("variable declaration", leftType, node->last);
+    }
+    break;
+  case TOK_WHILE:
+    assert_expr_type("while statement", "bool", node->first);
+    typecheck_stmt(node->last);
+    break;
+  case TOK_IF: typecheck_if(node); break;
+  case TOK_IFELSE: typecheck_ifelse(node); break;
+  case TOK_BINOP:
+    {
+      string op = *(node->first->next->lexinfo);
+      string leftType = typecheck_expr(node->first);
+      string rightType = typecheck_expr(node->last);
+      
+      if(op != "=")  {
+	show_error("Assignment (=) is the only binary operator that forms a statement", node);
+      }
+      if (op == "==") {
+	printf("== found\n");
+      }
+      else {
+	if(node->first->symbol != TOK_VARIABLE
+	   && node->first->symbol != TOK_INDEX
+	   && node->first->symbol != '.')
+	  show_error("You can only assign values to variables", node->first);
+	else {
+	  string varname = *(node->first->first->lexinfo);
+	  string leftType = "";
+	  if(node->first->symbol == '.'){
+	    varname = node->scope->lookup(*(node->first->first->first->lexinfo));
+	    varname +=
+	      "." + *(node->first->last->lexinfo);
+	    leftType = node->scope->lookup(varname);	    
+	  }
+	  else if(node->first->symbol == TOK_INDEX){
+	    varname = *(node->first->first->first->lexinfo);
+	    string t = node->scope->lookup(varname);
+
+	    if(leftType == "string"){ leftType = "char"; }
+	    else leftType = t.substr(0, t.find("["));
+	      
+	    if(typecheck_expr(node->first->last->first) != "int"){
+	      show_error("You can only index into arrays and strings with integers", node->first->last->first);
+	    }
+	  }
+	  else {
+	    leftType = node->scope->lookup(varname); 
+	  }
+	  assert_expr_type("binop "+op, leftType, node->last);
+	}
+      }
+      break;
+    }
+  case TOK_RETURNVOID:
+    {
+      string funType = node->scope->parentFunction(NULL);
+      string retType = funType.substr(0, funType.find("("));
+      if(retType != "void"){
+	show_error("Got a return type void, expected "
+		   +funType.substr(0, funType.find("(")), node);
+      }
+      break;
+    }
+  case TOK_RETURN:
+    {
+      string funType = node->scope->parentFunction(NULL);
+      string retType = funType.substr(0, funType.find("("));
+      string realRetType = typecheck_expr(node->first);
+      if(retType != realRetType)
+	show_error("Attempted to return type "+realRetType
+		   +", expected "+retType
+		   , node);
+      break;
+    }
+  case TOK_FUNCTION: 
+    {
+      typecheck_block(node->last);
+      break;
+    }
+  case TOK_PROTOTYPE:
+    {
+      break;
+    }
+  default:
+    breakpoint();
+    printf("MEow");
+    show_error("No case in typecheck_stmt for node type:", node);
+    printf("\tNode Symbol: %d\n", node->symbol);
+    break;
+  }
+
+}
+
+void typecheck_block(astree tree) {  
+  astree node = tree->first;
+  while (node != NULL) {
+    typecheck_stmt(node);
+    node = node->next;
+  }
+}

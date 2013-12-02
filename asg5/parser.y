@@ -111,12 +111,6 @@ paramlist   : paramlist ',' identdecl { $$ = adopt1($1,$3);
             ;
 
 
-
-decl        : basetype TOK_IDENT ';'           { $$ = adopt2 (func_astree(TOK_INITDECL, $1), $1, $2);}
-            | basetype TOK_ARRAY TOK_IDENT ';' { $$ = adopt3 (func_astree(TOK_INITDECL, $1), $1, $2, $3);}
-            ;
-
-
 identdecl   : basetype TOK_IDENT            { $$ = adopt2 (func_astree(TOK_DECLID, $1), $1, $2);}
             | basetype TOK_ARRAY TOK_IDENT  { $$ = adopt3 (func_astree(TOK_DECLID, $1), $1, $2, $3);}
             ;
@@ -132,7 +126,6 @@ blockhead   : blockhead statement    { $$=adopt1($1,$2);}
 
 statement   : block                  { $$=$1;}
             | vardecl                { $$=$1;}
-            | identdecl              { $$=$1; }
             | while                  { $$=$1;}
             | ifelse                 { $$=$1;}
             | return                 { $$=$1;}
@@ -239,12 +232,12 @@ variable    : expr '[' expr ']'      { freeast($4);
             | TOK_IDENT              { $$ = adopt1(func_astree(TOK_VARIABLE, $1), $1); }
             ;
 
-constant    : TOK_CHARCON            { $$ = adopt1(func_astree(TOK_CONSTANT, $1), $1); }
-            | TOK_INTCON             { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1);; }
-            | TOK_STRINGCON          { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1);; }
-            | TOK_FALSE              { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1);; }
-            | TOK_TRUE               { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1);; }
-            | TOK_NULL               { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1);; }
+constant    : TOK_CHARCON            { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1); }
+            | TOK_INTCON             { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1); }
+            | TOK_STRINGCON          { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1); }
+            | TOK_FALSE              { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1); }
+            | TOK_TRUE               { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1); }
+            | TOK_NULL               { $$ =  adopt1(func_astree(TOK_CONSTANT, $1), $1); }
             ;
 %%
 
