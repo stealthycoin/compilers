@@ -3,4 +3,19 @@
 
 #include "oclib.oh"
 
+int[] a = new int[5];
+int i = 0;
+while(i < 2){
+  i = i + 1;
+}
+
 puts ("Hello, world!\n");
+
+int addThem(int a, int b, bool c){
+    while(true){  
+    int z = 1 + 2; 
+    }
+  return a + b;
+}
+
+int x = addThem(1 + 2 + 3 + i , i + 1, true);

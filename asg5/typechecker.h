@@ -19,5 +19,6 @@ static map<int, string> PRIMATIVE_MAP = {
 
 void typecheck_block(astree tree);
 void typecheck_stmt(astree tree);
+string typecheck_expr(astree expression);
 
 #endif

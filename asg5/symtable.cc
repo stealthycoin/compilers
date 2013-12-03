@@ -190,6 +190,25 @@ void SymbolTable::switchOnTok(astree node)
   return;
 }
 
+SymbolTable *SymbolTable::findOrigin(string name){
+  // Look up "name" in the identifier mapping of the current block
+  if (this->mapping.count(name) > 0) {
+    // If we found an entry, just return its type
+    return this;
+  }
+  // Otherwise, if there is a surrounding scope
+  if (this->parent != NULL) {
+    // look up the symbol in the surrounding scope
+    // and return its reported type
+    return this->parent->findOrigin(name);
+  } else {
+    // Return "" if the global symbol table has no entry
+    errprintf("Unknown identifier: %s\n", name.c_str());
+    set_exitstatus(EXIT_FAILURE);
+    return 0;
+  }
+}
+
 attributes SymbolTable::attrsFromNode(string type, astree node){
   attributes attrs;
   attrs.type = type;

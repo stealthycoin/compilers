@@ -79,6 +79,8 @@ class SymbolTable {
   // Returns the empty string "" if variable was not found
   string lookup(string name);
 
+  SymbolTable *findOrigin(string name);
+
   // Looks through the symbol table chain to find the function which
   // surrounds the scope and returns its signature
   // or "" if there is no surrounding function.
@@ -86,6 +88,8 @@ class SymbolTable {
   // Use parentFunction(NULL) to get the parentFunction of the current block.
   string parentFunction(SymbolTable* innerScope);
 
+  
+  int getNum(){ return number; }
   // Running id number for symbol tables
   static int N;
 

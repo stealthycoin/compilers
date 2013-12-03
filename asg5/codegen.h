@@ -5,10 +5,7 @@
 #include "symtable.h"
 #include "typechecker.h"
 
-typedef struct codegenParams {
-  FILE *output;
-  SymbolTable symTable;
-} codegenParams; 
+
 
 void codegen(string filename, astree t);
 

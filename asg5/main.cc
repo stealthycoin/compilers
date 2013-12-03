@@ -17,6 +17,7 @@
 #include "lyutils.h"
 #include "symtable.h"
 #include "typechecker.h"
+#include "codegen.h"
 
 string dOption= "";
 string yyin_cpp_command = "";
@@ -110,6 +111,10 @@ int main(int argc, char **argv) {
    yyin_cpp_pclose();
 
    typecheck_block(yyparse_astree);
+
+   if(get_exitstatus() != EXIT_FAILURE){
+     codegen(string(argv[1])+".oil", yyparse_astree);
+   }
 
    return get_exitstatus();
 }
