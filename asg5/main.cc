@@ -113,7 +113,9 @@ int main(int argc, char **argv) {
    typecheck_block(yyparse_astree);
 
    if(get_exitstatus() != EXIT_FAILURE){
-     codegen(string(argv[1])+".oil", yyparse_astree);
+     string oilFile = string(argv[1])+".oil";
+     codegen(oilFile, yyparse_astree);
+     system(("gcc -g -o program -x c " + oilFile + " oclib.c").c_str());
    }
 
    return get_exitstatus();

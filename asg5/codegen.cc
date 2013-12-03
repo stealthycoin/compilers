@@ -2,16 +2,20 @@
 #include "typechecker.h"
 #include "yyparse.h"
 #include <cstdlib>
+#include <unordered_set>
+#include <vector>
 
 FILE *output;
 int varCounter;
 int controlCounter;
-int tabCounter; 
 
 string codegenExpr(astree expr);
-void switchOnToken(astree token);
+void switchOnTokenInstructions(astree token, bool root = false);
 void printStmt(string s, bool label = false);
 void printBlock(astree token);
+unordered_set<string> globals;
+
+vector<astree> initializers;
 
 string itoa(int i){
   char v[50] = {0};
@@ -74,7 +78,9 @@ string typeMap(string t){
   if(t == "bool"){ newType = "ubyte"; }
   else if (t == "int"){ newType = "int"; }
   else if (t == "bool"){ newType = "ubyte"; }
+  else if (t == "char"){ newType = "ubyte"; }
   else if (t == "int"){ newType = "int"; }
+
   else if (t == "string"){ newType = "ubyte *"; }
   else if (t == "bool[]"){ newType = "ubyte *"; }
   else if (t == "char[]"){ newType = "ubyte *"; }
@@ -85,16 +91,13 @@ string typeMap(string t){
 
 }
 
-string rename(string varname, string newType, astree node){
-  string newName = "";
-  if(false){ /* Global Name Logic */ }
-  else {
-    newName = "_" + itoa(node->scope->getNum()) + "_" + varname;
-  }
+string rename(string varname, astree node){
+  string newName = "_" + itoa(node->scope->findOrigin(varname)->getNum()) + "_" + varname;
+  if(globals.find(newName) != globals.end()) return "_" + newName; 
   return newName;
 }
 
-string codegen_vardecl(astree node){
+string codegen_vardecl(astree node, bool global = false){
   string leftType = "";
   string varname = "";
   astree rvalue;
@@ -113,9 +116,21 @@ string codegen_vardecl(astree node){
   } 
 
   string newType = typeMap(leftType);;
-  string newName = rename(varname, newType, node);
+  string newName = rename(varname, node);
+
+  if(globals.find(newName) != globals.end()){
+    return "_" + newName + "=" + codegenExpr(node->last);
+  }
+
+  if(global) {
+    globals.insert(newName);
+    initializers.push_back(node); 
+    newName = "_" + newName;
+    return newType + " " + newName;
+  }
   
-  return newType + " " + newName + " = " + codegenExpr(node->last);
+
+  else return newType + " " + newName + "=" + codegenExpr(node->last);
 }
 
 
@@ -123,11 +138,7 @@ string codegen_vardecl(astree node){
 
 string codegen_variable(astree expr){
   string varname = *(expr->first->lexinfo);
-  if(false){ /* global name logic */ }
-  else {
-    return "_" + itoa(expr->scope->findOrigin(varname)->getNum()) + "_" + varname; 
-  }
-  return "UNKNOWN VAR";
+  return rename(varname, expr);
 }
 
 string codegen_constant(astree expression){
@@ -151,10 +162,30 @@ string codegen_call(astree expression){
   return + "__" + fn + "(" + argList + ")";
 }
 
+string codegen_newarray(astree expr){
+  string type = *(expr->first->first->lexinfo);
+  string newType = typeMap(type);
+  return "("+newType+"*)xcalloc("+(*(expr->last->first->lexinfo))+", sizeof("+newType+"))";
+}
+
+string codegen_new(astree expr){
+  string type = *(expr->first->first->lexinfo);
+  string newType = typeMap(type);
+  return "("+newType+"*)xcalloc("+(*(expr->last->first->lexinfo))+", sizeof("+newType+"))";
+}
+
+string codegen_index(astree expr){
+  string newType = typeMap(expr->scope->lookup(*(expr->first->first->lexinfo)));
+  string newName = rename(*(expr->first->first->lexinfo), expr);
+  return newName + "[" + codegenExpr(expr->last) + "]";
+}
+
 //Returns an oil expression containing or referencing the desired value.
 // Will return a constant in the case of a constant.
 string codegenExpr(astree expr){
   switch(expr->symbol){
+  case TOK_INDEX: return codegen_index(expr); 
+  case TOK_NEWARRAY: return codegen_newarray(expr);
   case TOK_CALL: return codegen_call(expr);
   case TOK_CONSTANT: return codegen_constant(expr);
   case TOK_VARIABLE: return codegen_variable(expr); 
@@ -167,9 +198,7 @@ string codegenExpr(astree expr){
 
 void printStmt(string s, bool label){
   if(!label){
-    for(int i = 0; i < tabCounter; i ++){
-      fprintf(output, "\t");
-    }
+      fprintf(output, "        ");
   }
   fprintf(output, "%s;\n", s.c_str()); 
 
@@ -180,15 +209,13 @@ void codegen_while(astree token){
   printStmt("while_"+counter+":", true);
   string condition = codegenExpr(token->first);
   printStmt("if(!" + condition + ") goto break_" + counter);
-  switchOnToken(token->last);
+  switchOnTokenInstructions(token->last);
   printStmt("goto while_"+counter);
   printStmt("break_"+counter+":", true);
 }
 
 void printBlock(astree token){
-  tabCounter++;
-  switchOnToken(token);
-  tabCounter--;
+  switchOnTokenInstructions(token);
 }
 
 void codegen_function(astree token){
@@ -203,7 +230,7 @@ void codegen_function(astree token){
     string varname = *(arg->first->next->lexinfo);
     string newType = typeMap(*(arg->first->first->lexinfo));
     fprintf(output, "%s ", newType.c_str());
-    fprintf(output, "%s",  rename(varname, newType, token->last->first).c_str());
+    fprintf(output, "%s",  rename(varname, token->last->first).c_str());
     arg = arg->next;
   }
 
@@ -219,41 +246,67 @@ void codegen_return(astree token){
   printStmt("return "+val);
 }
 
-void switchOnToken(astree token) {
+void switchOnTokenDefinitions(astree token){
+  switch (token->symbol) {
+  case TOK_FUNCTION: codegen_function(token); break; 
+  case TOK_ROOT: {
+    astree child = token->first;
+    while(child != NULL){ switchOnTokenDefinitions(child); child = child->next; }
+    break;
+  }
+  case TOK_VARDECL: printStmt(codegen_vardecl(token, true), true); break;
+  case TOK_STRUCT: break; //covered in struct pass
+  }
+}
+
+void switchOnTokenInstructions(astree token, bool rootLevel) {
   switch (token->symbol) {
   case TOK_WHILE: codegen_while(token); break;
   case TOK_CALL: printStmt(codegenExpr(token)); break;
-  case TOK_FUNCTION: codegen_function(token); break; 
+  case TOK_FUNCTION: break;
   case TOK_RETURN: codegen_return(token); break;
   case TOK_RETURNVOID: printStmt("return"); break; 
   case TOK_ROOT: {
     astree child = token->first;
-    while(child != NULL){ switchOnToken(child); child = child->next; }
+    while(child != NULL){ switchOnTokenInstructions(child, true); child = child->next; }
     break;
   }
   case TOK_BLOCK: {
     astree child = token->first;
-    while(child != NULL){ switchOnToken(child); child = child->next; }
+    while(child != NULL){ switchOnTokenInstructions(child); child = child->next; }
     break;
   }
-  case TOK_VARDECL: printStmt(codegen_vardecl(token)); break;
+  case TOK_VARDECL: if(!rootLevel) printStmt(codegen_vardecl(token)); break;
   case TOK_BINOP: printStmt(codegenExpr(token)); break;
     break;
   case TOK_STRUCT: break; //covered in struct pass
   }
 }
 
+void initializeGlobals(){
+  for(int i = 0; i < initializers.size(); i++){
+    printStmt(codegen_vardecl(initializers[i], true));
+  }
+
+}
 void codegen(string filename, astree t){  
   output = fopen(filename.c_str(), "w");
   varCounter = 0;
   controlCounter = 0;
-  tabCounter = 0;
   
   fprintf(output, "#define __OCLIB_C__\n");
   fprintf(output, "#include \"oclib.oh\"\n");
 
+  fprintf(output, "ubyte ** __argv;\n");
+  fprintf(output, "int __argi;\n\n");
+
   structPass(t);
-  switchOnToken(t);
+  switchOnTokenDefinitions(t);
+  
+  fprintf(output, "\n__ocmain ()\n{");
+  initializeGlobals();
+  switchOnTokenInstructions(t, true);
+  fprintf(output, "}\n");
   
   fclose(output);
 }
