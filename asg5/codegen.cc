@@ -13,8 +13,8 @@ string codegenExpr(astree expr);
 void switchOnTokenInstructions(astree token, bool root = false);
 void printStmt(string s, bool label = false);
 void printBlock(astree token);
-unordered_set<string> globals;
 
+unordered_set<string> globals;
 vector<astree> initializers;
 
 string itoa(int i){
@@ -97,7 +97,7 @@ string rename(string varname, astree node){
   return newName;
 }
 
-string codegen_vardecl(astree node, bool global = false){
+string codegen_vardecl(astree node, bool global = false, bool globalInit = false){
   string leftType = "";
   string varname = "";
   astree rvalue;
@@ -118,19 +118,21 @@ string codegen_vardecl(astree node, bool global = false){
   string newType = typeMap(leftType);;
   string newName = rename(varname, node);
 
-  if(globals.find(newName) != globals.end()){
-    return "_" + newName + "=" + codegenExpr(node->last);
+  if(globalInit){
+    return newName + "=" + codegenExpr(node->last);
   }
-
-  if(global) {
-    globals.insert(newName);
-    initializers.push_back(node); 
-    newName = "_" + newName;
-    return newType + " " + newName;
+  else{
+    if(globals.find(newName) != globals.end()){
+      return "_" + newName + "=" + codegenExpr(node->last);
+    }
+    else if(global) {
+      globals.insert(newName);
+      initializers.push_back(node); 
+      newName = "_" + newName;
+      return newType + " " + newName;
+    }
+    else return newType + " " + newName + "=" + codegenExpr(node->last);
   }
-  
-
-  else return newType + " " + newName + "=" + codegenExpr(node->last);
 }
 
 
@@ -285,7 +287,7 @@ void switchOnTokenInstructions(astree token, bool rootLevel) {
 
 void initializeGlobals(){
   for(int i = 0; i < initializers.size(); i++){
-    printStmt(codegen_vardecl(initializers[i], true));
+    printStmt(codegen_vardecl(initializers[i], true, true));
   }
 
 }
@@ -303,7 +305,7 @@ void codegen(string filename, astree t){
   structPass(t);
   switchOnTokenDefinitions(t);
   
-  fprintf(output, "\n__ocmain ()\n{");
+  fprintf(output, "\n__ocmain ()\n{\n");
   initializeGlobals();
   switchOnTokenInstructions(t, true);
   fprintf(output, "}\n");

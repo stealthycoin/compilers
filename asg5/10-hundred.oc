@@ -2,20 +2,9 @@
 
 #include "oclib.oh"
 
-
-
-
-bool True(){
-     return false;
-}
-
-int count = 50;
-int count2 = true;
-int someInt = 1 + 2 + 3 + 4 + true;
-
+int count = 0;
 while (count <= 100) {
-   count = true;
-   count2 = true;
+   count = count + 1;
    puti (count);
    endl ();
 }

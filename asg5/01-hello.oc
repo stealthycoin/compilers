@@ -17,10 +17,17 @@ while(i < 2){
 puts ("Hello, world!\n");
 
 int addThem(int a, int b, bool c){
-    while(a < 2){ 
+    while(a < 10){ 
        a = a + 1; 
     }
+  puti(a + b);
+  puts("\n");
   return a + b;
 }
 
-int x = addThem(1 + 2 + 3 + i , i + 1, true);
+int x = addThem(1, 2, true);
+azz[1] = 0;
+puts("\n");
+puti(azz[1]);
+
+string sz = new string(5);
