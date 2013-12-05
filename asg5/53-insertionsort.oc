@@ -3,7 +3,9 @@
 // Use insertion sort to print argv in osrted order.
 //
 
-#include "oclib.oh"
+#include <iostream>
+
+using namespace std; 
 
 int strcmp (string s1, string s2) {
    int index = 0;
@@ -19,21 +21,33 @@ int strcmp (string s1, string s2) {
    return 0;
 }
 
+puts("STRCMP TEST\n");
+puti(strcmp("zf", "zf"));
+puts("\n");
+
 void insertion_sort (int size, string[] array) {
    int sorted = 1;
    while (sorted < size) {
-      puts("Sorted < size\n");
+      puts("SORTED < SIZE LOOP\n");
       int slot = sorted;
       string element = array[slot];
       bool contin = true;
       while (contin) {
+	puts("\tSORTLOOP\n");
          if (slot == 0) {
-            contin = false;
+	   puts("\t\tCASE 1: Slot == 0\n");
+	   contin = false;
          }else if (strcmp (array[slot - 1], element) <= 0) {
-            contin = false;
+	   puts("\t\tCASE 2\n\t\t");
+	   puts(array[slot - 1]);
+	   puts("\n\t\t");
+	   puts(element);
+	   puts("\n");
+	   contin = false;
          }else {
-            array[slot] = array[slot - 1];
-            slot = slot - 1;
+	   puts("\t\tCASE 3\n");
+	   array[slot] = array[slot - 1];
+	   slot = slot - 1;
          }
       }
       array[slot] = element;

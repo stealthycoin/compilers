@@ -32,11 +32,11 @@ string codegen_binop(astree token){
   string left = codegenExpr(token->first);
   string op = *(token->first->next->lexinfo);
   string right = codegenExpr(token->last);
-  
+
   if(op == "="){
     return(left + " = " + right);
   }
-  else if(op == ">=" || op == ">" || op == "<=" || op == "<" || "!="){
+  else if(op == ">=" || op == ">" || op == "<=" || op == "<" || op == "!="){
     string newTempName = "b"+itoa(varCounter++);
     printStmt("ubyte " + newTempName + " = " + left + " " + op + " " + right);
     return newTempName; 
@@ -46,7 +46,8 @@ string codegen_binop(astree token){
     string newTempType = ""; 
     string newTempName = ""; 
 
-    if(t == "int"){ newTempType = "int"; newTempName = "i"+itoa(varCounter++); }
+    if(t == "int"){ 
+      newTempType = "int"; newTempName = "i"+itoa(varCounter++); }
     else if(t == "bool" || t == "char"){ newTempType = "ubyte"; newTempName = "b"+itoa(varCounter++); }
     else if(t == "string"){ newTempType = "ubyte *"; newTempName = "p"+itoa(varCounter++); }
     else {
@@ -287,7 +288,6 @@ void switchOnTokenDefinitions(astree token){
 
 
 void codegen_if(astree node, string successJump = "-1"){
-  switchOnTokenInstructions(node->last);
   //  if(node->last->symbol == 291)
   string counter = itoa(controlCounter++);
   string condition = codegenExpr(node->first);
