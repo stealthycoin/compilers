@@ -22,8 +22,10 @@ typedef struct attributes {
 // (the parent and children symbol tables).
 class SymbolTable {
 
+
   // The unique number of this block
   int number;
+
 
   // Pointer to the parent symbol table
   // (might be NULL for the global table)
@@ -41,6 +43,7 @@ class SymbolTable {
   map<string,SymbolTable*> subscopes;
 
  public:
+  int getNum();
   // Creates and returns a new symbol table.
   //
   // Use "new SymbolTable(NULL)" to create the global table
@@ -89,7 +92,7 @@ class SymbolTable {
   string parentFunction(SymbolTable* innerScope);
 
   
-  int getNum(){ return number; }
+
   // Running id number for symbol tables
   static int N;
 

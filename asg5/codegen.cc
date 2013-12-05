@@ -1,5 +1,6 @@
 #include "codegen.h"
 #include "typechecker.h"
+#include "symtable.h"
 #include "yyparse.h"
 #include <cstdlib>
 #include <unordered_set>
@@ -34,6 +35,11 @@ string codegen_binop(astree token){
   
   if(op == "="){
     return(left + " = " + right);
+  }
+  else if(op == ">=" || op == ">" || op == "<=" || op == "<" || "!="){
+    string newTempName = "b"+itoa(varCounter++);
+    printStmt("ubyte " + newTempName + " = " + left + " " + op + " " + right);
+    return newTempName; 
   }
   else {
     string t = typecheck_expr(token->first);
@@ -100,7 +106,6 @@ string rename(string varname, astree node){
 string codegen_vardecl(astree node, bool global = false, bool globalInit = false){
   string leftType = "";
   string varname = "";
-  astree rvalue;
   
   if(node->first->symbol == TOK_ARRAY){ //something magical
     leftType = *(node->first->next->first->lexinfo)+"[]";
@@ -144,7 +149,7 @@ string codegen_variable(astree expr){
 }
 
 string codegen_constant(astree expression){
-  if(expression->first->symbol == TOK_NULL){ return "NULL"; }
+  if(expression->first->symbol == TOK_NULL){ return "null"; }
   return *(expression->first->lexinfo);
 }
 
@@ -182,10 +187,26 @@ string codegen_index(astree expr){
   return newName + "[" + codegenExpr(expr->last) + "]";
 }
 
+string codegen_ord(astree expr){
+  string v = codegen_variable(expr->first);
+  string newTempName = "i"+itoa(varCounter++);
+  printStmt("int "+newTempName+" = "+v+" - 48;");
+  return newTempName;
+}
+
+string codegen_chr(astree expr){
+  string v = codegen_variable(expr->first);
+  string newTempName = "b"+itoa(varCounter++);
+  printStmt("ubyte "+newTempName+" = "+v+" + 48;");
+  return newTempName;
+}
+
 //Returns an oil expression containing or referencing the desired value.
 // Will return a constant in the case of a constant.
 string codegenExpr(astree expr){
   switch(expr->symbol){
+  case TOK_ORD: return codegen_ord(expr);
+  case TOK_CHR: return codegen_chr(expr);
   case TOK_INDEX: return codegen_index(expr); 
   case TOK_NEWARRAY: return codegen_newarray(expr);
   case TOK_CALL: return codegen_call(expr);
@@ -229,8 +250,11 @@ void codegen_function(astree token){
   while(arg != NULL){
     if(first != true){ fprintf(output, ", "); }
     first = false; 
-    string varname = *(arg->first->next->lexinfo);
-    string newType = typeMap(*(arg->first->first->lexinfo));
+    string varname = *(arg->last->lexinfo);
+    string type = *(arg->first->first->lexinfo);
+    if(arg->first->next->symbol == TOK_ARRAY) type += "[]";
+    string newType = typeMap(type);
+
     fprintf(output, "%s ", newType.c_str());
     fprintf(output, "%s",  rename(varname, token->last->first).c_str());
     arg = arg->next;
@@ -261,9 +285,64 @@ void switchOnTokenDefinitions(astree token){
   }
 }
 
+
+void codegen_if(astree node, string successJump = "-1"){
+  switchOnTokenInstructions(node->last);
+  //  if(node->last->symbol == 291)
+  string counter = itoa(controlCounter++);
+  string condition = codegenExpr(node->first);
+  printStmt("if_"+counter+":;", true);
+  printStmt("if(!"+condition+") goto fi_" + counter, true);
+  switchOnTokenInstructions(node->last);
+  if(successJump != "-1")
+    printStmt("goto fi_ifelse_"+successJump);
+  printStmt("fi_"+counter+":", true);
+}
+
+/*
+              TOK_IFELSE (if)
+                binop
+                block
+                TOK_IFELSE (if)
+                  binop
+                  block
+                  block
+ */
+
+void codegen_ifelse(astree node, string successJump = "-1"){
+
+
+  string chainCounter = itoa(controlCounter++);
+
+  string thisCounter = itoa(controlCounter++);
+
+  string condition = codegenExpr(node->first);
+
+  printStmt("if(!"+condition+") goto fi_" + thisCounter);
+  switchOnTokenInstructions(node->first->next);
+  if(successJump == "-1")
+    printStmt("goto fi_ifelse_"+chainCounter);
+  else
+    printStmt("goto fi_ifelse_"+successJump);
+  printStmt("fi_"+thisCounter+":", true);
+
+  astree temp = node->first->next->next;
+  while(temp != NULL){
+    if(temp->symbol == TOK_IF){
+      codegen_if(temp, chainCounter);
+      printStmt("goto fi_ifelse_"+chainCounter);
+    }
+    else if(temp->symbol == TOK_IFELSE) codegen_ifelse(temp, chainCounter);
+    else { switchOnTokenInstructions(temp); }
+    temp = temp->next;
+  }
+  printStmt("fi_ifelse_"+chainCounter+":", true);
+}	
 void switchOnTokenInstructions(astree token, bool rootLevel) {
   switch (token->symbol) {
   case TOK_WHILE: codegen_while(token); break;
+  case TOK_IF: codegen_if(token); break;
+  case TOK_IFELSE: codegen_ifelse(token); break;
   case TOK_CALL: printStmt(codegenExpr(token)); break;
   case TOK_FUNCTION: break;
   case TOK_RETURN: codegen_return(token); break;
@@ -286,7 +365,7 @@ void switchOnTokenInstructions(astree token, bool rootLevel) {
 }
 
 void initializeGlobals(){
-  for(int i = 0; i < initializers.size(); i++){
+  for(uint i = 0; i < initializers.size(); i++){
     printStmt(codegen_vardecl(initializers[i], true, true));
   }
 

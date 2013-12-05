@@ -22,6 +22,7 @@ int strcmp (string s1, string s2) {
 void insertion_sort (int size, string[] array) {
    int sorted = 1;
    while (sorted < size) {
+      puts("Sorted < size\n");
       int slot = sorted;
       string element = array[slot];
       bool contin = true;
@@ -42,8 +43,6 @@ void insertion_sort (int size, string[] array) {
 
 void print_array (string label, int size, string[] array) {
    endl ();
-   puts (label);
-   puts (":\n");
    int index = 0;
    while (index < size) {
       puts (array[index]);

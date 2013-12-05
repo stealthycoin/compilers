@@ -45,6 +45,7 @@ void setChildrenScope(astree node, SymbolTable *table){
   }
 }
 
+int SymbolTable::getNum(){ return this->number; }
 
 void SymbolTable::switchOnTok(astree node)
 {
@@ -99,13 +100,21 @@ void SymbolTable::switchOnTok(astree node)
     case TOK_PROTOTYPE:
       {
 
-	string name = *(node->first->first->next->lexinfo);
-	string type = *(node->first->first->first->lexinfo);
+	astree plist = node->first->next->first;	
+	string name = "";
+	string type = "";
 
+	if(node->first->first->next->symbol == TOK_ARRAY){
+	  type = *(node->first->first->first->lexinfo) + "[]";
+	  name = *(node->first->first->next->next->lexinfo);
+	}
+	else {
+	  name = *(node->first->first->next->lexinfo);
+	}
        
 	string argType = "";
 	bool first = true;
-	astree plist = node->first->next->first;
+
 	while(plist != NULL){
 	  if(first != true){ argType += ", "; }
 	  first = false; 
@@ -128,6 +137,7 @@ void SymbolTable::switchOnTok(astree node)
 	  if(!first) type += ", ";
 	  first = false; 
 	  type += *(arg->first->first->lexinfo);
+	  if(arg->first->next->symbol == TOK_ARRAY)  type += "[]";
 	  arg = arg->next;
 	}
 	type += ")";
@@ -141,8 +151,10 @@ void SymbolTable::switchOnTok(astree node)
 	arg = node->first->next->first;
 	  
 	while (arg) {
+	  string t = *(arg->first->first->lexinfo);
+	  if(arg->first->next->symbol == TOK_ARRAY)  t += "[]";
 	  block->addSymbol(*(arg->last->lexinfo), 
-			   block->attrsFromNode(*(arg->first->first->lexinfo), arg));
+			   block->attrsFromNode(t, arg));
 	  arg = arg->next;
 	}
 	  
@@ -190,6 +202,7 @@ void SymbolTable::switchOnTok(astree node)
   return;
 }
 
+
 SymbolTable *SymbolTable::findOrigin(string name){
   // Look up "name" in the identifier mapping of the current block
   if (this->mapping.count(name) > 0) {
@@ -208,6 +221,7 @@ SymbolTable *SymbolTable::findOrigin(string name){
     return 0;
   }
 }
+
 
 attributes SymbolTable::attrsFromNode(string type, astree node){
   attributes attrs;

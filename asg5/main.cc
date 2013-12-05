@@ -112,9 +112,12 @@ int main(int argc, char **argv) {
 
    typecheck_block(yyparse_astree);
 
+   
+   printf("TYPECHECKED\n");
    if(get_exitstatus() != EXIT_FAILURE){
      string oilFile = string(argv[1])+".oil";
      codegen(oilFile, yyparse_astree);
+     printf("CODEGENNED\n");
      system(("gcc -g -o program -x c " + oilFile + " oclib.c").c_str());
    }
 
