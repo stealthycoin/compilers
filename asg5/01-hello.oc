@@ -30,4 +30,4 @@ azz[1] = 0;
 puts("\n");
 puti(azz[1]);
 
-string sz = new string(5);
+//string sz = new string(5);

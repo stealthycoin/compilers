@@ -49,19 +49,19 @@ void yyin_cpp_pclose (void) {
    if (pclose_rc != 0) set_exitstatus (EXIT_FAILURE);
 }
 
-void write_files(char *filename) {
-    string tokFilename = string(filename)+".tok";
+void write_files(string basename) {
+    string tokFilename = basename+".tok";
     ly_tokFile=fopen(tokFilename.c_str(),"w");
     assert(ly_tokFile!=NULL);
     yyparse();
     fclose(ly_tokFile);
 
-    string strName = string(filename)  + ".str";
+    string strName = basename  + ".str";
     FILE *cor = fopen(strName.c_str(),"w");
     dump_stringset(cor);
     fclose(cor);
 
-    string astFilename = string(filename)+".ast";
+    string astFilename = basename+".ast";
     FILE *astFile=fopen(astFilename.c_str(), "w");
     dump_astree(astFile, yyparse_astree);
     fclose(astFile);
@@ -69,7 +69,7 @@ void write_files(char *filename) {
     //global symbol table
     SymbolTable* globalTable = new SymbolTable(NULL);
     globalTable->populateTable(yyparse_astree);
-    string symFilename = string(filename) + ".sym";
+    string symFilename = basename + ".sym";
     FILE *symFile = fopen(symFilename.c_str(), "w");
     globalTable->dump(symFile, 0);
     fclose(symFile);
@@ -105,21 +105,21 @@ void scan_opts (int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-   set_execname(argv[0]);
-   scan_opts (argc, argv);
-   write_files( argv[1] );
-   yyin_cpp_pclose();
+  string basename = string(argv[1]);
+  basename = basename.substr(0, basename.find("."));
 
-   typecheck_block(yyparse_astree);
+  set_execname(argv[0]);
+  scan_opts (argc, argv);
+  write_files( basename );
+  yyin_cpp_pclose();
 
+  typecheck_block(yyparse_astree);
    
-   printf("TYPECHECKED\n");
-   if(get_exitstatus() != EXIT_FAILURE){
-     string oilFile = string(argv[1])+".oil";
-     codegen(oilFile, yyparse_astree);
-     printf("CODEGENNED\n");
-     system(("gcc -g -o program -x c " + oilFile + " oclib.c").c_str());
-   }
+  if(get_exitstatus() != EXIT_FAILURE){
+    string oilFile = basename+".oil";
+    codegen(oilFile, yyparse_astree);
+    system(("gcc -g -o "+basename+" -x c " + oilFile + " oclib.c").c_str());
+  }
 
-   return get_exitstatus();
+  return get_exitstatus();
 }
